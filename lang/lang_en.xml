@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <texts>
+        <text name="input_SC_SELECT_INPUT_STATE"        text="Select Input State"/>
+        <text name="input_SC_SELECT_OUTPUT_STATE"       text="Select Output State"/>
+        <text name="input_SC_ACTIVATE_FILLTYPE_MOVER"   text="Toggle Move to Output"/>
+
+        <text name="scAction_selectInputState"          text="SC: Select input"/>
+        <text name="scAction_selectOutputState"         text="SC: Select output"/>
+        <text name="scAction_moveToOutputOn"            text="SC: Move to output"/>
+        <text name="scAction_moveToOutputOff"           text="SC: Stop moving"/>
+
+        <text name="scUI_currentState"                  text="Current State"/>
+        <text name="scUI_currentInputState"             text="Input State"/>
+        <text name="scUI_currentOutputState"            text="Output State"/>
+
+        <text name="scUI_linkedStorage"                 text="Controlled Storage"/>
+        <text name="scUI_storage"                       text="Storage"/>
+        <text name="scUI_input"                         text="Input"/>
+        <text name="scUI_output"                        text="Output"/>
+        <text name="scUI_inputOutput"                   text="Input/Output"/>
+        <text name="scUI_empty"                         text="Empty"/>
+	</texts>
+</l10n>

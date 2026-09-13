@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="103">
+    <author>ThundR</author>
+    <version>1.0.0.0</version>
+    <title>
+        <en>State Controller</en>
+    </title>
+    <description>
+        <en>
+<![CDATA[
+Allows creation of "states" which allow you to change object parameters in game.
+Currently works with production point placeables. More to come later.
+]]>
+        </en>
+    </description>
+    <iconFilename>icon.dds</iconFilename>
+    <multiplayer supported="true" />
+
+    <l10n filenamePrefix="lang/lang"/>
+
+	<extraSourceFiles>
+		<sourceFile filename="scripts/core/THUtils.lua"/>
+		<sourceFile filename="scripts/core/THCore.lua"/>
+		<sourceFile filename="scripts/core/THData.lua"/>
+		<sourceFile filename="scripts/THMain.lua"/>
+	</extraSourceFiles>
+
+    <actions>
+        <action name="SC_SELECT_INPUT_STATE"        category="ONFOOT" axisType="HALF"/>
+        <action name="SC_SELECT_OUTPUT_STATE"       category="ONFOOT" axisType="HALF"/>
+        <action name="SC_ACTIVATE_FILLTYPE_MOVER"   category="ONFOOT" axisType="HALF"/>
+    </actions>
+
+    <inputBinding>
+        <actionBinding action="SC_SELECT_INPUT_STATE">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_rshift KEY_leftbracket"/>
+        </actionBinding>
+        <actionBinding action="SC_SELECT_OUTPUT_STATE">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_rshift KEY_rightbracket"/>
+        </actionBinding>
+        <actionBinding action="SC_ACTIVATE_FILLTYPE_MOVER">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_rshift KEY_backslash"/>
+        </actionBinding>
+    </inputBinding>
+</modDesc>
