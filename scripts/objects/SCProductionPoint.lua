@@ -1013,6 +1013,10 @@ isControllerLoaded = false
 if not controller:getIsEnabled() then
 return
 end
+local function hook_createUnloadTriggers(...)
+return {}
+end
+THUtils.makeTempHook(self, "UnloadTrigger", "createTriggers", hook_createUnloadTriggers)
 local function hook_xmlFileIterate(pSuperFunc, pSelf, pXMLKey, pIterateFunc, ...)
 local function prependFunc2(...)
 if pXMLKey ~= nil then
@@ -1057,6 +1061,7 @@ end
 local function appendFunc(success, ...)
 THUtils.restoreFunction(self, xmlFile, "iterate")
 THUtils.restoreFunction(self, "Storage", "load")
+THUtils.restoreFunction(self, "UnloadTrigger", "createTriggers")
 local function protectedChunk()
 success = success and isControllerLoaded
 if success then

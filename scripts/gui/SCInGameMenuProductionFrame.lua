@@ -44,7 +44,7 @@ end
 function SCInGameMenuProductionFrame:hook_populateCellForItemInSection(superFunc, parent, list, section, index, cell, ...)
 local function appendFunc(...)
 local function protectedChunk()
-if list == parent.productionList then
+if list == parent.productsList then
 local productionList = parent:getProductionPoints()
 if productionList ~= nil and section ~= nil then
 local productionData = g_thMain:getDataTable(productionList[section])
@@ -60,7 +60,7 @@ end
 end
 end
 end
-else
+elseif list == parent.detailsList and cell ~= nil and cell.name == "fillTypeCell" then
 local productionData, production = g_thMain:getDataTable(parent.selectedProductionPoint)
 if productionData ~= nil and cell ~= nil and index ~= nil then
 local controller = productionData.stateController
@@ -68,11 +68,11 @@ if controller ~= nil and controller:getIsEnabled() then
 local fillType, stateType, isInput = nil,nil,nil
 local i18n = controller.i18n
 if section == 1 then
-fillType = production.inputFillTypeIdsArray[index]
+fillType = production.sortedInputFillTypes[index]
 stateType = SCStateController.STATE_TYPE.INPUT
 isInput = true
 elseif section == 2 then
-fillType = production.outputFillTypeIdsArray[index]
+fillType = production.sortedOutputFillTypes[index]
 stateType = SCStateController.STATE_TYPE.OUTPUT
 isInput = false
 end
@@ -87,8 +87,13 @@ fillPercent = math.clamp(fillLevel / capacity, 0, 1)
 end
 local fillLevelText = i18n:formatVolume(fillLevel, nil,nil, true, nil, fillType)
 local statusBar = cell:getAttribute("bar")
-cell:getAttribute("fillLevel"):setText(fillLevelText)
+local fillLevelElement = cell:getAttribute("fillLevel")
+if fillLevelElement ~= nil then
+fillLevelElement:setText(fillLevelText)
+end
+if statusBar ~= nil then
 parent:setStatusBarValue(statusBar, fillPercent, isInput)
+end
 end
 end
 end
