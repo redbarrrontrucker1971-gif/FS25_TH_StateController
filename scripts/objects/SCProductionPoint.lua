@@ -1015,15 +1015,20 @@ return
 end
 local function hook_xmlFileIterate(pSuperFunc, pSelf, pXMLKey, pIterateFunc, ...)
 local function prependFunc2(...)
-if pXMLKey == xmlKey..".sellingStation.unloadTrigger"
-or pXMLKey == xmlKey..".loadingStation.loadTrigger"
-then
+if pXMLKey ~= nil then
+local relativeKey = pXMLKey:sub(#xmlKey + 1)
+local isSellingStationTrigger = relativeKey:find(".sellingStation", 1, true) ~= nil
+and relativeKey:find("unloadTrigger", 1, true) ~= nil
+local isLoadingStationTrigger = relativeKey:find(".loadingStation", 1, true) ~= nil
+and relativeKey:find("loadTrigger", 1, true) ~= nil
+if isSellingStationTrigger or isLoadingStationTrigger then
 pIterateFunc = function(...) end
-elseif pXMLKey ~= nil then
+else
 local targetKey = pXMLKey:gsub(xmlKey, "")
 if targetKey ~= nil and targetKey ~= "" then
 if pSelf:hasProperty(controllerBaseKey..targetKey) then
 pXMLKey = controllerBaseKey..targetKey
+end
 end
 end
 end
