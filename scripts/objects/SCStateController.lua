@@ -236,6 +236,12 @@ if station:load(components, xmlFile, pStationKey, customEnv, i3dMappings, compon
 station.skipSell = placeable:getOwnerFarmId() ~= AccessHandler.EVERYONE
 station.storeSoldGoods = true
 station.owningPlaceable = placeable
+function station.getStoreGoods(_, pFarmId, pFillTypeIndex)
+return true
+end
+function station.getSkipSell(_, pFarmId, pFillTypeIndex)
+return placeable:getOwnerFarmId() ~= AccessHandler.EVERYONE
+end
 function station.getIsFillAllowedFromFarm(_, pFarmId)
 return self.accessHandler:canFarmAccess(pFarmId, placeable)
 end
@@ -664,8 +670,8 @@ function SCStateController:controlTriggerCallback(triggerId, otherId, onEnter, o
 local function protectedFunc()
 if self:getIsEnabled() then
 local ownerFarmId = self:getOwnerFarmId()
-local player = g_currentMission.player
-if player ~= nil and otherId == player.rootNode and (onEnter or onLeave) then
+local players = g_currentMission.players
+if players ~= nil and players[otherId] ~= nil and (onEnter or onLeave) then
 if onEnter then
 local accessHandler = self.accessHandler
 local playerFarmId = g_currentMission:getFarmId()
