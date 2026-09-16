@@ -32,7 +32,7 @@ function SCInGameMenuProductionFrame:hook_update(superFunc, parent, dt, ...)
 local function appendFunc(...)
 local function protectedChunk()
 if self.areRecipesDirty then
-parent:updateDetails()
+parent:updateProductionLists()
 self.areRecipesDirty = false
 end
 end
