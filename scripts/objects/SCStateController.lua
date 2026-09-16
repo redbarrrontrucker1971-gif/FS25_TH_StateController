@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 SCStateController = {}
@@ -82,7 +82,7 @@ self.stateTypes.byId[stateTypeInfo.id] = stateTypeInfo
 self.stateTypes.byIndex[stateTypeInfo.index] = stateTypeInfo
 self.stateTypes.byTarget[stateTypeInfo] = stateTypeInfo
 end
-self.hudBox = g_currentMission.hud.infoDisplay:createBox(KeyValueInfoHUDBox)
+self.hudBox = g_currentMission.hud.infoDisplay:createBox(InfoDisplayKeyValueBox)
 self.hudInfo = {}
 self.infoTitle = ""
 self.rootNode = placeable.rootNode
