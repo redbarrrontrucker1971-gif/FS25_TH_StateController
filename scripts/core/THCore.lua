@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 THCore = {}
@@ -89,8 +89,6 @@ function THCore:init()
 self:initLoadedMods()
 self:addConsoleCommand("setDebugFlag", "Sets specified debug flag", "consoleCommandSetDebugFlag")
 self:setFunctionHook("BaseMission",   "loadMapFinished",        THCore)
-self:setFunctionHook("FSBaseMission", "registerActionEvents",   THCore)
-self:setFunctionHook("BaseMission",   "unregisterActionEvents", THCore)
 self:setFunctionHook("TypeManager",   "finalizeTypes",          THCore)
 return true
 end
