@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 SCInGameMenuProductionFrame = {}
@@ -83,7 +83,7 @@ local fillPercent = 0
 if capacity <= 0 then
 fillLevel = 0
 else
-fillPercent = MathUtil.clamp(fillLevel / capacity, 0, 1)
+fillPercent = math.clamp(fillLevel / capacity, 0, 1)
 end
 local fillLevelText = i18n:formatVolume(fillLevel, nil,nil, true, nil, fillType)
 local statusBar = cell:getAttribute("bar")

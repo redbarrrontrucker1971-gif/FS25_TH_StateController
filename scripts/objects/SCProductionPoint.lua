@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 SCProductionPoint = {}
@@ -1127,7 +1127,7 @@ end
 local function appendFunc(...)
 local function protectedChunk()
 if prependSuccess then
-local dt = MathUtil.clamp(g_time - oldLastUpdatedTime, 0, 30000)
+local dt = math.clamp(g_time - oldLastUpdatedTime, 0, 30000)
 parent.lastUpdatedTime = oldLastUpdatedTime
 self:onUpdateProductionFinished(dt)
 end
