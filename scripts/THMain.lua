@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 THMain = {}
@@ -7,6 +7,7 @@ THMain.COLOR = {
 UI_MAIN      = {0.0227, 0.5346, 0.8519, 1},
 UI_ALTERNATE = {0.9900, 0.4640, 0.0010, 1},
 UI_GREEN     = {0.3763, 0.6038, 0.0782, 1},
+UI_YELLOW    = {1.0000, 0.8000, 0.0000, 1},
 UI_DISABLED  = {0.4, 0.4, 0.4, 1}
 }
 THMain.MESSAGE_TYPE = {

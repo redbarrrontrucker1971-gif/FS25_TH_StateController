@@ -1,6 +1,22 @@
 -- Copyright ©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
+SCInfoDisplayKeyValueBox = {}
+local SCInfoDisplayKeyValueBox_mt = Class(SCInfoDisplayKeyValueBox, InfoDisplayKeyValueBox)
+function SCInfoDisplayKeyValueBox.new(infoDisplay, uiScale, customMt)
+local self = InfoDisplayKeyValueBox.new(infoDisplay, uiScale, customMt or SCInfoDisplayKeyValueBox_mt)
+local color = THMain.COLOR.UI_YELLOW
+self.warningIcon:setColor(color[1], color[2], color[3], color[4])
+return self
+end
+function SCInfoDisplayKeyValueBox.draw(self, posX, posY)
+local activeColor = HUD.COLOR.ACTIVE
+HUD.COLOR.ACTIVE = THMain.COLOR.UI_YELLOW
+local nextPosX, nextPosY = InfoDisplayKeyValueBox.draw(self, posX, posY)
+HUD.COLOR.ACTIVE = activeColor
+return nextPosX, nextPosY
+end
+
 SCStateController = {}
 SCStateController_mt = Class(SCStateController, Object)
 InitObjectClass(SCStateController, "SCStateController")
@@ -82,7 +98,7 @@ self.stateTypes.byId[stateTypeInfo.id] = stateTypeInfo
 self.stateTypes.byIndex[stateTypeInfo.index] = stateTypeInfo
 self.stateTypes.byTarget[stateTypeInfo] = stateTypeInfo
 end
-self.hudBox = g_currentMission.hud.infoDisplay:createBox(InfoDisplayKeyValueBox)
+self.hudBox = g_currentMission.hud.infoDisplay:createBox(SCInfoDisplayKeyValueBox)
 self.hudInfo = {}
 self.infoTitle = ""
 self.rootNode = placeable.rootNode
