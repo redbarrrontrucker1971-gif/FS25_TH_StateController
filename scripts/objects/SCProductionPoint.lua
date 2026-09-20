@@ -79,6 +79,7 @@ function SCProductionPoint.registerXMLPaths(schema, xmlPath)
 local xmlDataKey = g_thMain.xmlDataKey
 local productionPath = xmlPath..".productions.production(?)"
 local productionDataPath = productionPath.."."..xmlDataKey
+SCMoistureDryer.registerXMLPaths(schema, productionDataPath)
 THUtils.registerXMLPath(schema, XMLValueType.BOOL,   productionDataPath, "#isDynamic", "Use dynamic configuration", false)
 THUtils.registerXMLPath(schema, XMLValueType.STRING, productionDataPath, "#iconFilename", "Custom recipe icon filename")
 local additivePath = productionDataPath..".additives.additive(?)"
@@ -213,6 +214,9 @@ return false
 end
 local numInputs = #recipeInfo.inputs
 local numOutputs = #recipeInfo.outputs
+if SCMoistureDryer.configure(self, recipeInfo, recipeData, xmlFile, xmlKey, customEnv) then
+return true
+end
 local isDynamicRecipe = xmlFile:getValue(xmlKey.."#isDynamic", false)
 local isSpecialRecipe = false
 if SCProductionPoint.SPECIAL_RECIPE[recipeId] ~= nil then
@@ -783,6 +787,7 @@ end
 function SCProductionPoint:onUpdateProductionFinished(dt)
 local parent = self:getParent()
 local controller = self.stateController
+local driedStorages = {}
 local placeable = parent.owningPlaceable
 local palletSpawner = parent.palletSpawner
 local ownerFarmId = parent:getOwnerFarmId()
@@ -806,6 +811,12 @@ end
 if not parent:getIsProductionEnabled(recipeInfo.id) then
 if recipeData.isDirty then
 self:updateProductionRecipes(recipeInfo.id)
+end
+elseif recipeData.moistureDryer ~= nil then
+SCMoistureDryer.update(self, recipeInfo, recipeData, minuteFactor / 60, driedStorages)
+elseif SCMoistureDryer.isBlockedLegacy(self, recipeData) then
+if self.isServer then
+SCMoistureDryer.setStatus(self, recipeInfo, ProductionPoint.PROD_STATUS.MISSING_INPUTS)
 end
 else
 local inputsTable = recipeInfo.inputs

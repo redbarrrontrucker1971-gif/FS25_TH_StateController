@@ -444,10 +444,14 @@ end
 return false
 end
 function SCStateController:delete(...)
+-- Placeable deletion and network teardown can both reach this object.
+if self.scIsDeleted then return end
+self.scIsDeleted = true
 local placeable = self:getParentPlaceable()
-if self.triggerNode ~= nil then
+if self.triggerNode ~= nil and self.triggerNode ~= 0 and entityExists(self.triggerNode) then
 removeTrigger(self.triggerNode)
 end
+self.triggerNode = nil
 local activatableObjectsSystem = g_currentMission.activatableObjectsSystem
 local storageSystem = self.storageSystem
 local economyManager = g_currentMission.economyManager
@@ -481,9 +485,11 @@ end
 end
 if self.hudBox ~= nil then
 infoDisplay:destroyBox(self.hudBox)
+self.hudBox = nil
 end
 self.messageCenter:unsubscribeAll(self)
 self.isEnabled = false
+SCStateController:superClass().delete(self)
 end
 function SCStateController:updateTick(dt, ...)
 local function protectedFunc(...)

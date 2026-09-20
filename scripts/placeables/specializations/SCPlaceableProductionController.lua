@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 SCPlaceableProductionController = {}
@@ -78,6 +78,7 @@ local specTable = g_thMain:getSpecTable(self, "productionController")
 local controller = specTable.stateController
 if controller ~= nil then
 controller:delete()
+specTable.stateController = nil
 end
 end
 return g_thMain:call(protectedFunc, ...)

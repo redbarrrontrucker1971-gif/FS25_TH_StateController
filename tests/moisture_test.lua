@@ -295,4 +295,131 @@ if arg[1] then
         equal(SellingStationExtension.dryingChargeAccumulator, 0)
     end)
 end
+dofile("scripts/objects/SCMoistureDryer.lua")
+SCStateController.STATE_TYPE = {INPUT = 1, OUTPUT = 2}
+SCProductionPoint.RECIPE_TYPE = {NORMAL = 0}
+ProductionPoint = {PROD_STATUS = {MISSING_INPUTS = 1, RUNNING = 2}}
+local function dryingSetup(moisture, fuelLevel)
+    local c = controller()
+    local wet = bin(c, "BIN01", 10000)
+    local other = bin(c, "BIN04", 10000)
+    local fuel = bin(c, "TANK01", 10000)
+    wet:setFillLevel(1000, 1); other:setFillLevel(1000, 1); fuel:setFillLevel(fuelLevel or 100, 3)
+    SCMoisture.set(wet, 1, {moisture = moisture or 0.24, quality = 50})
+    SCMoisture.set(other, 1, {moisture = 0.24, quality = 50})
+    c.selected = other
+    c.getActiveStorageList = function(self) return {self.selected} end
+    c.getIsStorageActive = function(self, storage) return storage == self.selected end
+    local parent = {
+        isOwned = true, productionCostsToClaim = 0, enabled = true,
+        owningPlaceable = {productionStatusChanged = function() end},
+        setProductionStatus = function() end,
+        setProductionState = function(self, _, enabled) self.enabled = enabled end
+    }
+    local data = {isServer = true, stateController = c, getParent = function() return parent end,
+        i18n = {getText = function() return "Moisture drying" end}}
+    local recipe = {id = "GRAIN_DRYER", inputs = {}, outputs = {}, costsPerActiveMinute = 20 / 60}
+    local rd = {}
+    assert(SCMoistureDryer.configure(data, recipe, rd, xml(), "recipe", "FS25_GSI_SILOS"))
+    return data, recipe, rd, wet, other, fuel, parent
+end
+test("GSI profile only dries BIN01 despite another input being selected", function()
+    local data, recipe, rd, wet, other, fuel, parent = dryingSetup()
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.22)
+    near(SCMoisture.info(other, 1).moisture, 0.24)
+    equal(wet:getFillLevel(1), 1000); equal(other:getFillLevel(1), 1000)
+    near(fuel:getFillLevel(3), 96); near(parent.productionCostsToClaim, 20)
+    equal(SCMoisture.info(wet, 1).quality, 50)
+    equal(recipe.outputs[1].type, 1)
+end)
+test("no propane means no drying or operating charge", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup(0.24, 0)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.24)
+    equal(parent.productionCostsToClaim, 0); equal(fuel:getFillLevel(3), 0)
+    equal(recipe.status, ProductionPoint.PROD_STATUS.MISSING_INPUTS)
+end)
+test("insufficient propane scales drying and operating charge", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup(0.24, 2)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.23)
+    near(parent.productionCostsToClaim, 10); near(fuel:getFillLevel(3), 0)
+end)
+test("target clamp stops drying and only charges the final fraction", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup(0.155)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.15)
+    near(fuel:getFillLevel(3), 99); near(parent.productionCostsToClaim, 5)
+    equal(parent.enabled, false)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(fuel:getFillLevel(3), 99); near(parent.productionCostsToClaim, 5)
+end)
+test("two dryer recipes cannot double-dry the same wet bin", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup()
+    local processed = {}
+    SCMoistureDryer.update(data, recipe, rd, 1, processed)
+    SCMoistureDryer.update(data, {id = "CORN_DRYER"}, rd, 1, processed)
+    near(SCMoisture.info(wet, 1).moisture, 0.22)
+    near(fuel:getFillLevel(3), 96); near(parent.productionCostsToClaim, 20)
+end)
+test("missing wet bin does not fall back to another bin", function()
+    local data, recipe, rd, _, other, fuel, parent = dryingSetup()
+    data.stateController.ids.BIN01 = nil
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(other, 1).moisture, 0.24)
+    near(fuel:getFillLevel(3), 100); equal(parent.productionCostsToClaim, 0)
+end)
+test("unknown moisture and dry grain do not consume propane", function()
+    local data, recipe, rd, wet, _, fuel = dryingSetup(0.12)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(fuel:getFillLevel(3), 100)
+    SCMoisture.set(wet, 1, nil)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(fuel:getFillLevel(3), 100); equal(SCMoisture.info(wet, 1), nil)
+end)
+test("client never changes moisture, propane or money", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup()
+    data.isServer = false
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.24)
+    near(fuel:getFillLevel(3), 100); equal(parent.productionCostsToClaim, 0)
+end)
+test("MS disabled keeps legacy recipe and blocks drying from other bins", function()
+    local data, _, _, wet, other = dryingSetup()
+    local recipe = {id = "CORN_DRYER", inputs = {{type = 1}}, outputs = {{type = 4}}}
+    local inputs, outputs = recipe.inputs, recipe.outputs
+    local rd = {}
+    g_currentMission.MoistureSystem = nil
+    equal(SCMoistureDryer.configure(data, recipe, rd, xml(), "recipe", "FS25_GSI_SILOS"), false)
+    equal(recipe.inputs, inputs); equal(recipe.outputs, outputs); equal(rd.moistureDryer, nil)
+    data.stateController.selected = other
+    equal(SCMoistureDryer.isBlockedLegacy(data, rd), true)
+    data.stateController.selected = wet
+    equal(SCMoistureDryer.isBlockedLegacy(data, rd), false)
+    g_currentMission.MoistureSystem = ms
+end)
+test("unrelated mods do not get the GSI profile", function()
+    local data, recipe = dryingSetup()
+    local rd = {}
+    equal(SCMoistureDryer.configure(data, recipe, rd, xml(), "recipe", "OtherMod"), false)
+    equal(rd.moistureDryer, nil); equal(rd.legacyDryerStorageId, nil)
+end)
+test("real production loop uses the dryer branch instead of consuming grain", function()
+    dofile("scripts/objects/SCProductionPoint.lua")
+    local data, recipe, rd, wet, _, fuel = dryingSetup()
+    local parent = data:getParent()
+    parent.getOwnerFarmId = function() return 1 end
+    parent.getIsProductionEnabled = function(self) return self.enabled end
+    parent.minuteFactorTimescaled = 1 / 1000
+    parent.activeProductions = {recipe}
+    data.getProductionRecipeList = function() return {recipe}, 1 end
+    data.getProductionRecipe = function() return recipe, rd end
+    data.updateProductionRecipes = function() end
+    g_currentMission.environment = {timeAdjustment = 1}
+    g_time = 60000
+    SCProductionPoint.onUpdateProductionFinished(data, 60000)
+    equal(wet:getFillLevel(1), 1000); near(SCMoisture.info(wet, 1).moisture, 0.22)
+    near(fuel:getFillLevel(3), 96)
+end)
 print(string.format("%d tests passed", checks))

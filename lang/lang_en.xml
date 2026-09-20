@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <l10n>
     <texts>
+        <text name="scProduction_moistureDrying" text="Moisture drying"/>
         <text name="input_SC_SELECT_INPUT_STATE"        text="Select Input State"/>
         <text name="input_SC_SELECT_OUTPUT_STATE"       text="Select Output State"/>
         <text name="input_SC_ACTIVATE_FILLTYPE_MOVER"   text="Toggle Move to Output"/>
