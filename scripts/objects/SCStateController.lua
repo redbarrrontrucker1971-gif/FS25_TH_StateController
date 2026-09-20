@@ -1358,6 +1358,7 @@ fillTypeTitle = "??"
 end
 if fillLevel > 0 then
 local fillLevelText = i18n:formatVolume(fillLevel, nil,nil, true, nil, fillTypeInfo.index)
+fillLevelText = fillLevelText .. SCMoisture.hudText(pStorageInfo, fillType)
 table.insert(hudInfo, {
 title = " - "..fillTypeTitle,
 text  = fillLevelText,

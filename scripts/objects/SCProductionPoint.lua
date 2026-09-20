@@ -878,6 +878,7 @@ if isOwned then
 parent.productionCostsToClaim = parent.productionCostsToClaim + (recipeInfo.costsPerActiveMinute * productionFactor)
 end
 if (not isOwned or enoughInput) and enoughOutput then
+local moistureContext = SCMoisture.beginRecipe(controller, recipeInfo.id)
 for inputIdx = 1, numInputs do
 local inputInfo = inputsTable[inputIdx]
 local inputFillType = inputInfo.type
@@ -898,6 +899,7 @@ controller:addFillLevel(SCStateController.STATE_TYPE.OUTPUT, outputAmount, outpu
 end
 end
 end
+SCMoisture.endRecipe(controller, moistureContext)
 if recipeInfo.status ~= ProductionPoint.PROD_STATUS.RUNNING then
 recipeInfo.status = ProductionPoint.PROD_STATUS.RUNNING
 placeable:productionStatusChanged(recipeInfo, recipeInfo.status)
