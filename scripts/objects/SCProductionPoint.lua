@@ -556,7 +556,10 @@ local fillLevel = controller:getStorageValue("fillLevel", SCStateController.STAT
 if baseFillType == nil then
 baseFillType = fillType
 end
-if fillLevel ~= nil and fillLevel > 0 then
+-- Fuel shares the Wet Bin input state, but a grain output cannot receive it.
+-- Do not include unsupported output crops in the mover's all-inputs recipe.
+if fillLevel ~= nil and fillLevel > 0
+and controller:getIsFillTypeActive(fillType, SCStateController.STATE_TYPE.OUTPUT) then
 local inputInfo  = {type = fillType, amount = baseAmount}
 local outputInfo = {type = fillType, amount = baseAmount, sellDirectly = false}
 table.insert(inputsTable, inputInfo)

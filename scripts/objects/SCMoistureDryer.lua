@@ -114,6 +114,45 @@ function SCMoistureDryer.setStatus(data, recipe, status)
     end
 end
 
+-- Only move measured, finished corn to the currently selected internal output.
+-- Setters enforce capacity and single-crop rules; return rejected liters to source.
+function SCMoistureDryer.transferReady(data, recipe, config)
+    local controller = data.stateController
+    local remaining = false
+    for _, source in ipairs(SCMoistureDryer.grainStorages(controller, config)) do
+        local info = SCMoisture.info(source, config.grain)
+        if info and info.moisture <= config.target + 0.0000001 then
+            for _, destination in ipairs(controller:getActiveStorageList(SCStateController.STATE_TYPE.OUTPUT)) do
+                if destination ~= source
+                    and controller:getCanAccessStorage(destination, nil, config.grain, SCStateController.STATE_TYPE.OUTPUT) then
+                    local before = source:getFillLevel(config.grain)
+                    local amount = math.min(before, math.max(0, destination:getFreeCapacity(config.grain)))
+                    if amount > 0 then
+                        SCMoisture.withContext(controller, {incoming = {[config.grain] = info}}, function()
+                            source:setFillLevel(before - amount, config.grain)
+                            local removed = before - source:getFillLevel(config.grain)
+                            local oldDestination = destination:getFillLevel(config.grain)
+                            destination:setFillLevel(oldDestination + removed, config.grain)
+                            local accepted = destination:getFillLevel(config.grain) - oldDestination
+                            if accepted < removed then
+                                source:setFillLevel(source:getFillLevel(config.grain) + removed - accepted, config.grain)
+                            end
+                            source:raiseDirtyFlags(source.storageDirtyFlag)
+                            destination:raiseDirtyFlags(destination.storageDirtyFlag)
+                        end)
+                    end
+                end
+            end
+        end
+        if source:getFillLevel(config.grain) > 0 then remaining = true end
+    end
+    if remaining then
+        SCMoistureDryer.setStatus(data, recipe, ProductionPoint.PROD_STATUS.NO_OUTPUT_SPACE)
+    else
+        data:getParent():setProductionState(recipe.id, false)
+    end
+end
+
 function SCMoistureDryer.update(data, recipe, recipeData, hours, processed)
     local parent = data:getParent()
     local controller = data.stateController
@@ -126,7 +165,7 @@ function SCMoistureDryer.update(data, recipe, recipeData, hours, processed)
     local plan = SCMoistureDryer.plan(controller, config, hours, processed)
     if plan.fuel <= 0 then
         if plan.hasGrain and not plan.unknown and not plan.alreadyProcessed then
-            parent:setProductionState(recipe.id, false)
+            SCMoistureDryer.transferReady(data, recipe, config)
         elseif not plan.alreadyProcessed then
             SCMoistureDryer.setStatus(data, recipe, ProductionPoint.PROD_STATUS.MISSING_INPUTS)
         end
@@ -165,5 +204,5 @@ function SCMoistureDryer.update(data, recipe, recipeData, hours, processed)
     parent.productionCostsToClaim = parent.productionCostsToClaim
         + (recipe.costsPerActiveMinute or 0) * activeHours * 60
     SCMoistureDryer.setStatus(data, recipe, ProductionPoint.PROD_STATUS.RUNNING)
-    if finished then parent:setProductionState(recipe.id, false) end
+    if finished then SCMoistureDryer.transferReady(data, recipe, config) end
 end

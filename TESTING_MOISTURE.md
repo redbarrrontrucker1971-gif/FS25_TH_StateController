@@ -1,4 +1,17 @@
-# State Controller 1.0.1.1 — Wet Bin drying test
+# State Controller 1.0.1.2 — Wet Bin drying and automatic output
+
+Finished corn now moves automatically to the selected internal Output State
+bin when Wet Bin moisture reaches 15%. Already-dry corn moves too: select a
+different output bin and activate the dryer. This is batch drying, not a
+continuous-flow simulation: wet grain stays in BIN01 until it reaches target.
+Full, incompatible, inaccessible, or same-as-source outputs leave grain in
+the Wet Bin and show no output space. Select another output to resume; waiting
+or transferring finished grain consumes no propane. The dryer stops after the
+Wet Bin empties. Incoming corn blends with existing output moisture and quality.
+
+The manual mover now excludes input materials unsupported by the output state,
+preventing Wet Bin's propane input from blocking a grain-only transfer.
+Local tests pass; in-game testing of 1.0.1.2 is pending.
 
 Fixes a startup ordering bug in 1.0.1.0: Moisture System initializes its crop
 tracking in `onStartMission`, after saved placeables load. The adapter no longer
@@ -8,8 +21,9 @@ time the dryer runs. Static XML validation is unchanged.
 Regression check: reload with 1,000 L corn at 15.2% in Wet Bin and 80,000 L
 propane, then enable Moisture drying (15%). After approximately six game minutes,
 corn should remain 1,000 L at 15%, using about 0.4 L propane (the whole-liter HUD
-may still show 80,000 L). Other bins must remain unchanged. Local tests reproduce
-the original startup failure and pass with this change; in-game testing is pending.
+may still show 80,000 L). Corn should now be in the selected output bin;
+unselected bins must remain unchanged. The startup fix was confirmed in-game
+on 1.0.1.1.
 
 This build adds Wet Bin drying for Moisture System 2.0.0.5. No files in
 Moisture System or GSI Silos are modified. State Controller detects Moisture
@@ -28,21 +42,25 @@ Use a copy of your save. Keep the GSI folder/ZIP named `FS25_GSI_SILOS`.
 
 The built-in GSI profile uses ONLY `BIN01` (Wet Bin) for grain and `TANK01`
 for propane. `BIN04`, displayed as Storage Bin #1, is NOT the Wet Bin.
-The dryer keeps corn in the Wet Bin while lowering its moisture; move it to
-another bin with the existing mover when ready. The input/output selectors
-do not change which bin the moisture dryer works on.
+The dryer always dries in Wet Bin, then transfers the finished batch to the
+selected Output State. Input selection does not change the drying source.
 
 1. Put measured corn above 15% in the Wet Bin and propane in the propane tank.
-2. Enable one of the existing GSI dryer productions in the production menu.
+2. Select an empty storage bin as Output State, then enable one of the existing
+   GSI dryer productions in the production menu.
    With Moisture System active they are labeled **Moisture drying (15%)**.
 3. Advance game time. The initial tuning removes 2 percentage points per game
-   hour, stopping automatically at 15%. Corn remains corn and its liters remain
+   hour. At 15%, corn moves to the selected output. Corn remains corn and its total liters remain
    unchanged. As in Moisture System's own dryer, stored quality history remains
    unchanged; this does not guarantee a reset to the best sale grade.
 4. Put wet corn in a different storage bin and select it for input/output.
    Only the Wet Bin should dry. Empty the propane tank: drying should pause.
 5. Save/reload during drying. Check that grain, propane and moisture persist.
    Quit to the menu and check the log for the previous cleanup errors.
+6. Try an output with only 400 L free and a 1,000 L finished batch. It should
+   move 400 L and retain 600 L in Wet Bin. Choose a different output and verify
+   the remaining 600 L moves without additional propane. Also test a bin
+   holding another crop and Wet Bin selected as its own output.
 
 Fuel tuning: 2 liters of propane per 1,000 liters of grain per percentage point
 removed. Example: 1,000 liters at 24% takes 4.5 game hours and 18 liters of

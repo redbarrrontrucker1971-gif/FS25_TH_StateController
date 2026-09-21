@@ -298,7 +298,7 @@ end
 dofile("scripts/objects/SCMoistureDryer.lua")
 SCStateController.STATE_TYPE = {INPUT = 1, OUTPUT = 2}
 SCProductionPoint.RECIPE_TYPE = {NORMAL = 0}
-ProductionPoint = {PROD_STATUS = {MISSING_INPUTS = 1, RUNNING = 2}}
+ProductionPoint = {PROD_STATUS = {MISSING_INPUTS = 1, RUNNING = 2, NO_OUTPUT_SPACE = 3}}
 local function dryingSetup(moisture, fuelLevel)
     local c = controller()
     local wet = bin(c, "BIN01", 10000)
@@ -308,7 +308,11 @@ local function dryingSetup(moisture, fuelLevel)
     SCMoisture.set(wet, 1, {moisture = moisture or 0.24, quality = 50})
     SCMoisture.set(other, 1, {moisture = 0.24, quality = 50})
     c.selected = other
-    c.getActiveStorageList = function(self) return {self.selected} end
+    c.getActiveStorageList = function(self, stateType)
+        if stateType == SCStateController.STATE_TYPE.OUTPUT then return self.outputs or {} end
+        return {self.selected}
+    end
+    c.getCanAccessStorage = function(_, storage) return not storage.denied end
     c.getIsStorageActive = function(self, storage) return storage == self.selected end
     local parent = {
         isOwned = true, productionCostsToClaim = 0, enabled = true,
@@ -341,7 +345,7 @@ test("crop tracking becomes ready after recipe loading: 1000L at 15.2% dries", f
     near(fuel:getFillLevel(3), 79999.6)
     equal(wet:getFillLevel(1), 1000)
     near(SCMoisture.info(other, 1).moisture, 0.24)
-    equal(parent.enabled, false)
+    equal(parent.enabled, true) -- waits for an output bin
 end)
 test("GSI profile only dries BIN01 despite another input being selected", function()
     local data, recipe, rd, wet, other, fuel, parent = dryingSetup()
@@ -371,7 +375,7 @@ test("target clamp stops drying and only charges the final fraction", function()
     SCMoistureDryer.update(data, recipe, rd, 1, {})
     near(SCMoisture.info(wet, 1).moisture, 0.15)
     near(fuel:getFillLevel(3), 99); near(parent.productionCostsToClaim, 5)
-    equal(parent.enabled, false)
+    equal(parent.enabled, true) -- waits for an output bin
     SCMoistureDryer.update(data, recipe, rd, 1, {})
     near(fuel:getFillLevel(3), 99); near(parent.productionCostsToClaim, 5)
 end)
@@ -441,5 +445,83 @@ test("real production loop uses the dryer branch instead of consuming grain", fu
     SCProductionPoint.onUpdateProductionFinished(data, 60000)
     equal(wet:getFillLevel(1), 1000); near(SCMoisture.info(wet, 1).moisture, 0.22)
     near(fuel:getFillLevel(3), 96)
+end)
+local function outputBin(data, capacity)
+    local b = bin(data.stateController, "OUTPUT", capacity or 10000)
+    b.getFreeCapacity = function(self, ft) return self.capacity - self:getFillLevel(ft) end
+    data.stateController.outputs = {b}
+    return b
+end
+test("dryer transfers the finished batch with moisture and quality intact", function()
+    local data, recipe, rd, wet, other, fuel, parent = dryingSetup(0.152)
+    local output = outputBin(data)
+    SCMoistureDryer.update(data, recipe, rd, 0.05, {})
+    equal(output:getFillLevel(1), 0); equal(wet:getFillLevel(1), 1000)
+    SCMoistureDryer.update(data, recipe, rd, 0.05, {})
+    equal(wet:getFillLevel(1), 0); equal(output:getFillLevel(1), 1000)
+    near(SCMoisture.info(output, 1).moisture, 0.15)
+    equal(SCMoisture.info(output, 1).quality, 50)
+    near(fuel:getFillLevel(3), 99.6); equal(parent.enabled, false)
+    equal(other:getFillLevel(1), 1000)
+end)
+test("partial output waits then follows a new output without using more fuel", function()
+    local data, recipe, rd, wet, _, fuel, parent = dryingSetup(0.15)
+    local first = outputBin(data, 400)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(first:getFillLevel(1), 400); equal(wet:getFillLevel(1), 600)
+    equal(recipe.status, ProductionPoint.PROD_STATUS.NO_OUTPUT_SPACE)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(wet:getFillLevel(1), 600); equal(fuel:getFillLevel(3), 100)
+    local second = outputBin(data)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(second:getFillLevel(1), 600); equal(wet:getFillLevel(1), 0)
+    equal(parent.enabled, false); equal(fuel:getFillLevel(3), 100)
+end)
+test("another crop, same bin, and inaccessible output never lose grain", function()
+    local data, recipe, rd, wet = dryingSetup(0.15)
+    local output = outputBin(data)
+    output:setFillLevel(100, 2)
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(wet:getFillLevel(1), 1000); equal(output:getFillLevel(1), 0)
+    equal(output:getFillLevel(2), 100)
+    near(SCMoisture.info(wet, 1).moisture, 0.15)
+    data.stateController.outputs = {wet}
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(wet:getFillLevel(1), 1000)
+    output = outputBin(data); output.denied = true
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(wet:getFillLevel(1), 1000); equal(output:getFillLevel(1), 0)
+end)
+test("output blends with existing corn by actual transferred liters", function()
+    local data, recipe, rd, wet = dryingSetup(0.15)
+    local output = outputBin(data)
+    output:setFillLevel(1000, 1)
+    SCMoisture.set(output, 1, {moisture = 0.13, quality = 90})
+    SCMoistureDryer.update(data, recipe, rd, 1, {})
+    equal(output:getFillLevel(1), 2000); equal(wet:getFillLevel(1), 0)
+    near(SCMoisture.info(output, 1).moisture, 0.14)
+    near(SCMoisture.info(output, 1).quality, 70)
+end)
+test("mover recipe excludes propane unsupported by the output state", function()
+    local rd = {type = SCProductionPoint.RECIPE_TYPE.SPECIAL, baseAmount = 100,
+        isInitialized = true, baseFillType = 1}
+    local recipe = {id = "SC_FILLTYPE_MOVER", inputs = {}, outputs = {}}
+    local c = {
+        getActiveFillTypeList = function() return {1, 3}, 2 end,
+        getStorageValue = function(_, _, _, ft) return ft == 1 and 1000 or 80000 end,
+        getIsFillTypeActive = function(_, ft) return ft == 1 end
+    }
+    local data = {isServer = true, stateController = c,
+        getParent = function() return {} end,
+        getSpecialRecipe = function() return recipe end,
+        messageCenter = {publish = function() end}}
+    local getDataTable = g_thMain.getDataTable
+    g_thMain.getDataTable = function() return rd end
+    THUtils.clearTable = function(t) for k in pairs(t) do t[k] = nil end; return t end
+    THUtils.round = function(n) return n end
+    SCProductionPoint.updateSpecialRecipes(data, recipe.id, true)
+    g_thMain.getDataTable = getDataTable
+    equal(#recipe.inputs, 1); equal(recipe.inputs[1].type, 1)
+    equal(#recipe.outputs, 1); equal(recipe.outputs[1].type, 1)
 end)
 print(string.format("%d tests passed", checks))
