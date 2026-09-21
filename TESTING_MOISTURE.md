@@ -1,4 +1,15 @@
-# State Controller 1.0.1.0 — Wet Bin drying test
+# State Controller 1.0.1.1 — Wet Bin drying test
+
+Fixes a startup ordering bug in 1.0.1.0: Moisture System initializes its crop
+tracking in `onStartMission`, after saved placeables load. The adapter no longer
+permanently rejects corn during recipe configuration; tracking is checked each
+time the dryer runs. Static XML validation is unchanged.
+
+Regression check: reload with 1,000 L corn at 15.2% in Wet Bin and 80,000 L
+propane, then enable Moisture drying (15%). After approximately six game minutes,
+corn should remain 1,000 L at 15%, using about 0.4 L propane (the whole-liter HUD
+may still show 80,000 L). Other bins must remain unchanged. Local tests reproduce
+the original startup failure and pass with this change; in-game testing is pending.
 
 This build adds Wet Bin drying for Moisture System 2.0.0.5. No files in
 Moisture System or GSI Silos are modified. State Controller detects Moisture

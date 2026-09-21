@@ -323,6 +323,26 @@ local function dryingSetup(moisture, fuelLevel)
     assert(SCMoistureDryer.configure(data, recipe, rd, xml(), "recipe", "FS25_GSI_SILOS"))
     return data, recipe, rd, wet, other, fuel, parent
 end
+test("crop tracking becomes ready after recipe loading: 1000L at 15.2% dries", function()
+    local data, recipe, _, wet, other, fuel, parent = dryingSetup(0.152)
+    fuel.capacity = 80000
+    fuel:setFillLevel(80000, 3)
+    local originalTracking = ms.shouldTrackFillType
+    ms.shouldTrackFillType = function() return false end
+    local rd = {}
+    assert(SCMoistureDryer.configure(data, recipe, rd, xml(), "recipe", "FS25_GSI_SILOS"))
+    -- Recipe setup happens before MS:onStartMission initializes CropValueMap.
+    SCMoistureDryer.update(data, recipe, rd, 0.1, {})
+    near(fuel:getFillLevel(3), 80000)
+    near(SCMoisture.info(wet, 1).moisture, 0.152)
+    ms.shouldTrackFillType = originalTracking
+    SCMoistureDryer.update(data, recipe, rd, 0.1, {})
+    near(SCMoisture.info(wet, 1).moisture, 0.15)
+    near(fuel:getFillLevel(3), 79999.6)
+    equal(wet:getFillLevel(1), 1000)
+    near(SCMoisture.info(other, 1).moisture, 0.24)
+    equal(parent.enabled, false)
+end)
 test("GSI profile only dries BIN01 despite another input being selected", function()
     local data, recipe, rd, wet, other, fuel, parent = dryingSetup()
     SCMoistureDryer.update(data, recipe, rd, 1, {})

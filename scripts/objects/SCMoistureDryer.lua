@@ -32,7 +32,10 @@ function SCMoistureDryer.configure(productionData, recipe, data, xml, key, custo
         rate = xml:getValue(path .. "#ratePerHour", 0.02),
         fuelRate = xml:getValue(path .. "#fuelPer1000LitersPerPoint", 2)
     }
-    if not grain or not fuel or grain == fuel or not SCMoisture.system(grain)
+    -- MS builds CropValueMap in onStartMission, after saved placeables load.
+    -- Only permanent XML errors belong here. Test crop tracking in update so
+    -- an initially unavailable crop recovers once MS finishes initialization.
+    if not grain or not fuel or grain == fuel
         or not (config.target > 0 and config.target < 1)
         or not (config.rate > 0 and config.rate <= 1)
         or not (config.fuelRate > 0 and config.fuelRate < math.huge) then
