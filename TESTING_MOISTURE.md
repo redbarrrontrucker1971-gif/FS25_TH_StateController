@@ -1,7 +1,11 @@
-# State Controller 1.0.1.2 — Wet Bin drying and automatic output
+# State Controller 1.0.1.3 — Wet Bin drying and automatic output
+
+The default corn target is now 20%, within the uploaded Moisture System
+version’s 18–22% ideal range. Previously dried corn is not rehydrated and
+existing quality history is preserved.
 
 Finished corn now moves automatically to the selected internal Output State
-bin when Wet Bin moisture reaches 15%. Already-dry corn moves too: select a
+bin when Wet Bin moisture reaches 20%. Already-dry corn moves too: select a
 different output bin and activate the dryer. This is batch drying, not a
 continuous-flow simulation: wet grain stays in BIN01 until it reaches target.
 Full, incompatible, inaccessible, or same-as-source outputs leave grain in
@@ -11,16 +15,16 @@ Wet Bin empties. Incoming corn blends with existing output moisture and quality.
 
 The manual mover now excludes input materials unsupported by the output state,
 preventing Wet Bin's propane input from blocking a grain-only transfer.
-Local tests pass; in-game testing of 1.0.1.2 is pending.
+Local tests pass; in-game testing of 1.0.1.3 is pending.
 
 Fixes a startup ordering bug in 1.0.1.0: Moisture System initializes its crop
 tracking in `onStartMission`, after saved placeables load. The adapter no longer
 permanently rejects corn during recipe configuration; tracking is checked each
 time the dryer runs. Static XML validation is unchanged.
 
-Regression check: reload with 1,000 L corn at 15.2% in Wet Bin and 80,000 L
-propane, then enable Moisture drying (15%). After approximately six game minutes,
-corn should remain 1,000 L at 15%, using about 0.4 L propane (the whole-liter HUD
+Regression check: reload with 1,000 L corn at 20.2% in Wet Bin and 80,000 L
+propane, then enable Moisture drying (20%). After approximately six game minutes,
+corn should remain 1,000 L at 20%, using about 0.4 L propane (the whole-liter HUD
 may still show 80,000 L). Corn should now be in the selected output bin;
 unselected bins must remain unchanged. The startup fix was confirmed in-game
 on 1.0.1.1.
@@ -45,12 +49,12 @@ for propane. `BIN04`, displayed as Storage Bin #1, is NOT the Wet Bin.
 The dryer always dries in Wet Bin, then transfers the finished batch to the
 selected Output State. Input selection does not change the drying source.
 
-1. Put measured corn above 15% in the Wet Bin and propane in the propane tank.
+1. Put measured corn above 20% in the Wet Bin and propane in the propane tank.
 2. Select an empty storage bin as Output State, then enable one of the existing
    GSI dryer productions in the production menu.
-   With Moisture System active they are labeled **Moisture drying (15%)**.
+   With Moisture System active they are labeled **Moisture drying (20%)**.
 3. Advance game time. The initial tuning removes 2 percentage points per game
-   hour. At 15%, corn moves to the selected output. Corn remains corn and its total liters remain
+   hour. At 20%, corn moves to the selected output. Corn remains corn and its total liters remain
    unchanged. As in Moisture System's own dryer, stored quality history remains
    unchanged; this does not guarantee a reset to the best sale grade.
 4. Put wet corn in a different storage bin and select it for input/output.
@@ -63,8 +67,8 @@ selected Output State. Input selection does not change the drying source.
    holding another crop and Wet Bin selected as its own output.
 
 Fuel tuning: 2 liters of propane per 1,000 liters of grain per percentage point
-removed. Example: 1,000 liters at 24% takes 4.5 game hours and 18 liters of
-propane to reach 15%. The existing operating cost is charged only for the time
+removed. Example: 1,000 liters at 24% takes 2 game hours and 8 liters of
+propane to reach 20%. The existing operating cost is charged only for the time
 actually drying. Partial fuel produces partial progress; dry/empty bins use
 none. Starting both recipes does not double the drying rate for the same bin.
 
@@ -139,7 +143,7 @@ Other State Controller placeables can opt in using this child of a recipe's
 
 ```xml
 <moistureDrying enabled="true" fillType="MAIZE" fuelFillType="PROPANE"
-    storageId="BIN01" fuelStorageId="TANK01" target="0.15"
+    storageId="BIN01" fuelStorageId="TANK01" target="0.20"
     ratePerHour="0.02" fuelPer1000LitersPerPoint="2" />
 ```
 

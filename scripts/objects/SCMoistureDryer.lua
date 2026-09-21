@@ -8,7 +8,7 @@ function SCMoistureDryer.registerXMLPaths(schema, path)
     schema:register(XMLValueType.STRING, path .. "#fuelFillType", "Dryer fuel", "PROPANE")
     schema:register(XMLValueType.STRING, path .. "#fuelStorageId", "Dedicated controlled fuel storage")
     schema:register(XMLValueType.STRING, path .. "#storageId", "Only this controlled grain storage may dry")
-    schema:register(XMLValueType.FLOAT, path .. "#target", "Target moisture fraction", 0.15)
+    schema:register(XMLValueType.FLOAT, path .. "#target", "Target moisture fraction", 0.20)
     schema:register(XMLValueType.FLOAT, path .. "#ratePerHour", "Moisture fraction removed per game hour", 0.02)
     schema:register(XMLValueType.FLOAT, path .. "#fuelPer1000LitersPerPoint", "Fuel liters per 1000 liters per percentage point", 2)
 end
@@ -28,7 +28,7 @@ function SCMoistureDryer.configure(productionData, recipe, data, xml, key, custo
         grain = grain, fuel = fuel,
         storageId = xml:getValue(path .. "#storageId", isGSI and "BIN01" or nil),
         fuelStorageId = xml:getValue(path .. "#fuelStorageId", isGSI and "TANK01" or nil),
-        target = xml:getValue(path .. "#target", 0.15),
+        target = xml:getValue(path .. "#target", 0.20),
         rate = xml:getValue(path .. "#ratePerHour", 0.02),
         fuelRate = xml:getValue(path .. "#fuelPer1000LitersPerPoint", 2)
     }
