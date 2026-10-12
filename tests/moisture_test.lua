@@ -532,4 +532,116 @@ test("mover recipe excludes propane unsupported by the output state", function()
     equal(#recipe.inputs, 1); equal(recipe.inputs[1].type, 1)
     equal(#recipe.outputs, 1); equal(recipe.outputs[1].type, 1)
 end)
+dofile("scripts/objects/SCGrainFlow.lua")
+names[4] = "CORN_DRY"
+local function flowSetup()
+    local data, recipe, rd, wet, other, fuel, parent = dryingSetup(0.24)
+    local c = data.stateController
+    local pit = bin(c, "BIN03", 50000)
+    local chamber = bin(c, "DRYER", 1000)
+    local ready = bin(c, "DRYER_OUT", 1000)
+    local out = outputBin(data, 10000)
+    other:setFillLevel(0, 1)
+    for _, s in ipairs(c.bins) do
+        s.getIsFillTypeSupported = function(_, ft) return ft == 1 or ft == 2 or ft == 4 end
+        s.getFreeCapacity = function(self, ft) return self.capacity - self:getFillLevel(ft) end
+    end
+    fuel.getIsFillTypeSupported = function(_, ft) return ft == 3 end
+    rd.moistureDryer.storageId = "DRYER"
+    rd.moistureDryer.holdFinished = true
+    rd.grainFlow = {role = "dryer", rate = 2000}
+    return data, recipe, rd, wet, other, fuel, pit, chamber, ready, out
+end
+test("receiving leg sends pit grain to any selected input at its rate", function()
+    local d, r, rd, wet, other, fuel, pit = flowSetup()
+    pit:setFillLevel(2000, 2)
+    SCMoisture.set(pit, 2, {moisture = 0.17, quality = 80})
+    SCGrainFlow.update(d, r, {grainFlow = {role = "receive", rate = 10000}}, 0.01)
+    equal(other:getFillLevel(2), 100); equal(pit:getFillLevel(2), 1900)
+    near(SCMoisture.info(other, 2).moisture, 0.17)
+    equal(wet:getFillLevel(1), 1000); equal(fuel:getFillLevel(3), 100)
+    d.stateController.selected = pit
+    SCGrainFlow.update(d, r, {grainFlow = {role = "receive", rate = 10000}}, 1)
+    equal(pit:getFillLevel(2), 1900)
+end)
+test("small dryer batch dries in chamber and waits for separate dry leg", function()
+    local d, r, rd, wet, other, fuel, pit, chamber, ready, out = flowSetup()
+    wet:setFillLevel(3000, 1)
+    SCMoisture.set(wet, 1, {moisture = 0.24, quality = 50})
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(wet:getFillLevel(1), 2000); equal(chamber:getFillLevel(1), 1000)
+    near(SCMoisture.info(chamber, 1).moisture, 0.22)
+    equal(ready:getFillLevel(1), 0); equal(out:getFillLevel(1), 0)
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(chamber:getFillLevel(1), 0); equal(ready:getFillLevel(1), 1000)
+    near(SCMoisture.info(ready, 1).moisture, 0.20)
+    near(fuel:getFillLevel(3), 92)
+    SCGrainFlow.update(d, r, rd, 1) -- discharge full: no additional propane
+    near(fuel:getFillLevel(3), 92)
+    SCGrainFlow.update(d, r, {grainFlow = {role = "discharge", rate = 10000}}, 0.01)
+    equal(out:getFillLevel(1), 100); equal(ready:getFillLevel(1), 900)
+    near(SCMoisture.info(out, 1).moisture, 0.20)
+    equal(wet:getFillLevel(1) + chamber:getFillLevel(1) + ready:getFillLevel(1) + out:getFillLevel(1), 3000)
+end)
+test("full and wrong-crop destinations preserve pit grain", function()
+    local d, r, _, _, other, _, pit = flowSetup()
+    pit:setFillLevel(1000, 1); other:setFillLevel(100, 2)
+    local rd = {grainFlow = {role = "receive", rate = 10000}}
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(pit:getFillLevel(1), 1000); equal(other:getFillLevel(1), 0)
+    other:setFillLevel(0, 2); other.capacity = 40
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(pit:getFillLevel(1), 960); equal(other:getFillLevel(1), 40)
+end)
+test("legacy dryer converts chamber corn with propane and separate discharge", function()
+    local d, r, rd, wet, _, fuel, _, chamber, ready, out = flowSetup()
+    g_currentMission.MoistureSystem = nil
+    rd.moistureDryer = nil
+    SCGrainFlow.update(d, r, rd, 0.1)
+    equal(wet:getFillLevel(1), 0); equal(chamber:getFillLevel(1), 800)
+    equal(ready:getFillLevel(4), 200); near(fuel:getFillLevel(3), 96)
+    SCGrainFlow.update(d, r, {grainFlow = {role = "discharge", rate = 10000}}, 0.01)
+    equal(out:getFillLevel(4), 100); equal(ready:getFillLevel(4), 100)
+    equal(chamber:getFillLevel(1) + ready:getFillLevel(4) + out:getFillLevel(4), 1000)
+    g_currentMission.MoistureSystem = ms
+end)
+test("chamber moisture survives save/load without returning to Wet Bin", function()
+    local d, r, rd, wet, _, _, _, chamber = flowSetup()
+    SCGrainFlow.update(d, r, rd, 0.5)
+    local c, x = d.stateController, xml()
+    for id, storage in pairs(c.ids) do
+        for i, candidate in ipairs(c.bins) do
+            if storage == candidate then x:setValue("sc.storages.storage(" .. (i-1) .. ").thStateController#id", id) end
+        end
+    end
+    c:saveToXMLFile(x, "sc")
+    chamber.scMoisture = {}
+    c:loadFromXMLFile(x, "sc")
+    near(SCMoisture.info(chamber, 1).moisture, 0.23)
+    equal(wet:getFillLevel(1), 0); equal(chamber:getFillLevel(1), 1000)
+    SCGrainFlow.update(d, r, rd, 0.5)
+    near(SCMoisture.info(chamber, 1).moisture, 0.22)
+end)
+test("flow opt-in builds moisture and legacy recipes with required inputs", function()
+    local d, r = flowSetup()
+    local x = xml(); x:setValue("recipe.grainFlow#role", "dryer")
+    local rd = {}
+    assert(SCGrainFlow.configure(d, r, rd, x, "recipe", "FS25_GSI_SILOS"))
+    equal(rd.moistureDryer.storageId, "DRYER"); equal(rd.moistureDryer.holdFinished, true)
+    g_currentMission.MoistureSystem = nil
+    rd = {}
+    assert(SCGrainFlow.configure(d, r, rd, x, "recipe", "FS25_GSI_SILOS"))
+    equal(rd.moistureDryer, nil); equal(r.inputs[2].type, 3); equal(r.outputs[1].type, 4)
+    g_currentMission.MoistureSystem = ms
+    equal(SCGrainFlow.configure(d, r, {}, x, "recipe", "OtherMod"), false)
+end)
+test("grain flow never mutates on a client or unowned production", function()
+    local d, r, rd, wet, _, _, pit, chamber = flowSetup()
+    d.isServer = false
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(wet:getFillLevel(1), 1000); equal(chamber:getFillLevel(1), 0)
+    d.isServer = true; d:getParent().isOwned = false
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(wet:getFillLevel(1), 1000)
+end)
 print(string.format("%d tests passed", checks))

@@ -80,6 +80,7 @@ local xmlDataKey = g_thMain.xmlDataKey
 local productionPath = xmlPath..".productions.production(?)"
 local productionDataPath = productionPath.."."..xmlDataKey
 SCMoistureDryer.registerXMLPaths(schema, productionDataPath)
+SCGrainFlow.registerXMLPaths(schema, productionDataPath)
 THUtils.registerXMLPath(schema, XMLValueType.BOOL,   productionDataPath, "#isDynamic", "Use dynamic configuration", false)
 THUtils.registerXMLPath(schema, XMLValueType.STRING, productionDataPath, "#iconFilename", "Custom recipe icon filename")
 local additivePath = productionDataPath..".additives.additive(?)"
@@ -214,6 +215,9 @@ return false
 end
 local numInputs = #recipeInfo.inputs
 local numOutputs = #recipeInfo.outputs
+if SCGrainFlow.configure(self, recipeInfo, recipeData, xmlFile, xmlKey, customEnv) then
+return true
+end
 if SCMoistureDryer.configure(self, recipeInfo, recipeData, xmlFile, xmlKey, customEnv) then
 return true
 end
@@ -815,6 +819,8 @@ if not parent:getIsProductionEnabled(recipeInfo.id) then
 if recipeData.isDirty then
 self:updateProductionRecipes(recipeInfo.id)
 end
+elseif recipeData.grainFlow ~= nil then
+SCGrainFlow.update(self, recipeInfo, recipeData, minuteFactor / 60)
 elseif recipeData.moistureDryer ~= nil then
 SCMoistureDryer.update(self, recipeInfo, recipeData, minuteFactor / 60, driedStorages)
 elseif SCMoistureDryer.isBlockedLegacy(self, recipeData) then

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="104">
+    <author>Redbarron</author>
+    <version>0.0.2.0</version>
+    <multiplayer supported="true"/>
+
+    <title>
+        <en>GSI 6 storage (Advanced Placeables)</en>
+    </title>
+
+    <description>
+        <en>GSI 6 storage silo for use with Advanced Placeables</en>
+    </description>
+
+    <iconFilename>mod_icon.png</iconFilename>
+    <l10n filenamePrefix="lang/lang"/>
+
+	<fillTypes filename="map/fillTypes/fillTypes.xml" />
+
+    <storeItems>
+        <storeItem xmlFilename="GSI4800.xml"/>
+		<storeItem xmlFilename="propaneTank.xml"/>
+		<storeItem xmlFilename="map/objects/pallets/propaneTank.xml"/>
+    </storeItems>
+</modDesc>

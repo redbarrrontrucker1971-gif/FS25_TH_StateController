@@ -1,3 +1,7 @@
+For State Controller 1.0.2.0 paired with GSI 0.0.2.0, use TESTING_TWO_LEGS.md.
+The instructions below describe the older GSI single-batch profile, which
+remains supported when grainFlow is not enabled in the silo XML.
+
 # State Controller 1.0.1.3 — Wet Bin drying and automatic output
 
 The default corn target is now 20%, within the uploaded Moisture System

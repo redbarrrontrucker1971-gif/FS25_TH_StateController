@@ -117,6 +117,7 @@ end
 -- Only move measured, finished corn to the currently selected internal output.
 -- Setters enforce capacity and single-crop rules; return rejected liters to source.
 function SCMoistureDryer.transferReady(data, recipe, config)
+    if config.holdFinished then return end
     local controller = data.stateController
     local remaining = false
     for _, source in ipairs(SCMoistureDryer.grainStorages(controller, config)) do

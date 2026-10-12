@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<placeable type="productionPoint" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../shared/xml/schema/placeable.xsd">
+    <storeData>
+        <name>GSI 6 bin + Obi 1000</name>
+        <functions>
+            <function>$l10n_function_farmSilo</function>
+        </functions>
+        <image>mod_icon.png</image>
+        <price>147000</price>
+        <dailyUpkeep>150</dailyUpkeep>
+        <lifetime>1000</lifetime>
+        <rotation>0</rotation>
+        <brand>UNIA</brand>
+        <species>placeable</species>
+        <category>productionPoints</category>
+        <brush>
+            <type>placeable</type>
+            <category>production</category>
+            <tab>factories</tab>
+        </brush>
+        <vertexBufferMemoryUsage>1586944</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>181760</indexBufferMemoryUsage>
+        <textureMemoryUsage>2162688</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>silo.i3d</filename>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true" >
+        <testAreas>
+            <testArea startNode="testArea1Start" endNode="testArea1End"/>
+        </testAreas>
+
+        <sounds>
+            <place template="siloImp"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1Start" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="1" maxSlope="75" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1Start" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="asphalt"/>
+        </levelAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1Start" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+        <indoorArea startNode="indoorArea2Start" widthNode="indoorArea2Width" heightNode="indoorArea2Height"/>
+    </indoorAreas>
+
+    <tipOcclusionUpdateAreas>
+        <tipOcclusionUpdateArea startNode="tipOcclusionUpdateArea1Start" endNode="tipOcclusionUpdateArea1End"/>
+    </tipOcclusionUpdateAreas>
+
+    <ai>
+        <updateAreas>
+            <updateArea startNode="tipOcclusionUpdateArea1Start" endNode="tipOcclusionUpdateArea1End"/>
+        </updateAreas>
+        <splines>
+            <spline node="aiSpline"/>
+        </splines>
+    </ai>
+
+    <hotspots>
+        <hotspot type="UNLOADING" linkNode="mapPosition" teleportNode="teleportNode"/>
+    </hotspots>
+
+    <triggerMarkers>
+        <triggerMarker node="markerLoading"        filename="$data/shared/assets/marker/markerIconLoad.i3d" />
+        <triggerMarker node="markerUnloading"      filename="$data/shared/assets/marker/markerIconUnload.i3d" />
+        <triggerMarker node="markerPlayerTrigger"  filename="$data/shared/assets/marker/markerIconWrench.i3d"  adjustToGround="true"/>
+        <triggerMarker node="markerControlTrigger" filename="$data/shared/assets/marker/markerIconWrench.i3d"  adjustToGround="true"/>
+    </triggerMarkers>
+
+    <infoTrigger triggerNode="infoTrigger"/>
+
+    <dynamicallyLoadedParts>
+        <dynamicallyLoadedPart filename="$data/placeables/shared/sellingStationGeneric/sellingStationGenericNoCover.i3d" node="0" linkNode="grainGutterLinkNode"/>
+    </dynamicallyLoadedParts>
+
+    <!--
+        Code Snippet: XML creation lines for Object Change
+
+        schema:register(XMLValueType.BOOL, basePath .. ".objectChange(?)#visibilityActive", string.format(positivStr, "visibility"))
+        schema:register(XMLValueType.BOOL, basePath .. ".objectChange(?)#visibilityInactive", string.format(negativeStr, "visibility"))
+        schema:register(XMLValueType.VECTOR_TRANS, basePath .. ".objectChange(?)#translationActive", string.format(positivStr, "translation"))
+        schema:register(XMLValueType.VECTOR_TRANS, basePath .. ".objectChange(?)#translationInactive", string.format(negativeStr, "translation"))
+        schema:register(XMLValueType.VECTOR_ROT, basePath .. ".objectChange(?)#rotationActive", string.format(positivStr, "rotation"))
+        schema:register(XMLValueType.VECTOR_ROT, basePath .. ".objectChange(?)#rotationInactive", string.format(negativeStr, "rotation"))
+        schema:register(XMLValueType.VECTOR_SCALE, basePath .. ".objectChange(?)#scaleActive", string.format(positivStr, "scale"))
+        schema:register(XMLValueType.VECTOR_SCALE, basePath .. ".objectChange(?)#scaleInactive", string.format(negativeStr, "scale"))
+        schema:register(XMLValueType.STRING, basePath .. ".objectChange(?)#shaderParameter", "Shader parameter name")
+        schema:register(XMLValueType.VECTOR_4, basePath .. ".objectChange(?)#shaderParameterActive", string.format(positivStr, "shaderParameter"))
+        schema:register(XMLValueType.VECTOR_4, basePath .. ".objectChange(?)#shaderParameterInactive", string.format(negativeStr, "shaderParameter"))
+        schema:register(XMLValueType.BOOL, basePath .. ".objectChange(?)#sharedShaderParameter", "Shader parameter is applied on all objects with the same material", false)
+        schema:register(XMLValueType.FLOAT, basePath .. ".objectChange(?)#massActive", string.format(positivStr, "mass"))
+        schema:register(XMLValueType.FLOAT, basePath .. ".objectChange(?)#massInactive", string.format(negativeStr, "mass"))
+        schema:register(XMLValueType.VECTOR_3, basePath .. ".objectChange(?)#centerOfMassActive", string.format(positivStr, "center of mass"))
+        schema:register(XMLValueType.VECTOR_3, basePath .. ".objectChange(?)#centerOfMassInactive", string.format(negativeStr, "center of mass"))
+        schema:register(XMLValueType.BOOL, basePath .. ".objectChange(?)#compoundChildActive", string.format(positivStr, "compound child state"))
+        schema:register(XMLValueType.BOOL, basePath .. ".objectChange(?)#compoundChildInactive", string.format(negativeStr, "compound child state"))
+        schema:register(XMLValueType.STRING, basePath .. ".objectChange(?)#rigidBodyTypeActive", string.format(positivStr, "rigid body type"))
+        schema:register(XMLValueType.STRING, basePath .. ".objectChange(?)#rigidBodyTypeInactive", string.format(negativeStr, "rigid body type"))
+        schema:register(XMLValueType.NODE_INDEX, basePath .. ".objectChange(?)#parentNodeActive", string.format(positivStr, "parent node"))
+        schema:register(XMLValueType.NODE_INDEX, basePath .. ".objectChange(?)#parentNodeInactive", string.format(negativeStr, "parent node"))
+    -->
+
+    <thStateController triggerNode="controlTrigger">
+        <!--
+            Input States:
+            - These are the configured states or storage configurations when the placeable receives material
+        -->
+        <inputStates>
+            <!--
+                Allowed <state> attributes:
+                - id:              control state internal id (must be unique)
+                - title:           in-game display text for each state
+                - storageIds:      space separated list of input storages for each state
+                - extendStorage:   allow silo extensions for this input state (default: false)
+                - extendRange:     range to check for silo extensions (default: 50)
+                - extendFillTypes: extend only the listed fillType(s) (default: all)
+            -->
+            <state id="bin01" title="$l10n_scTitle_storageBin01" storageIds="bin01 tank01" allowExtensions="true" extensionRange="50" extensionFillTypes="PROPANE">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin02" title="$l10n_scTitle_storageBin02" storageIds="bin02">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin03" title="$l10n_scTitle_storageBin03" storageIds="bin03">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin04" title="$l10n_scTitle_storageBin04" storageIds="bin04">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin05" title="$l10n_scTitle_storageBin05" storageIds="bin05">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin06" title="$l10n_scTitle_storageBin06" storageIds="bin06">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin07" title="$l10n_scTitle_storageBin07" storageIds="bin07">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin08" title="$l10n_scTitle_storageBin08" storageIds="bin08">
+                <objectChanges>
+                </objectChanges>
+            </state>
+        </inputStates>
+
+        <!--
+            Output States:
+            - These are the configured states or storage configurations when the placeable creates material
+        -->
+        <outputStates>
+            <!--
+                Allowed <state> keys:
+                - id:         control state internal id (must be unique)
+                - title:      in-game display text for each state
+                - storageIds: space separated list of input storages for each state
+                - extendStorage:   allow silo extensions for this input state (default: false)
+                - extendRange:     range to check for silo extensions (default: 50)
+                - extendFillTypes: extend only the listed fillType(s) (default: all)
+            -->
+            <state id="bin01" title="$l10n_scTitle_storageBin01" storageIds="bin01">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin02" title="$l10n_scTitle_storageBin02" storageIds="bin02">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin03" title="$l10n_scTitle_storageBin03" storageIds="bin03">
+                <objectChanges>
+                </objectChanges>
+            </state>
+
+            <state id="bin04" title="$l10n_scTitle_storageBin04" storageIds="bin04">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin05" title="$l10n_scTitle_storageBin05" storageIds="bin05">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin06" title="$l10n_scTitle_storageBin06" storageIds="bin06">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin07" title="$l10n_scTitle_storageBin07" storageIds="bin07">
+                <objectChanges>
+                </objectChanges>
+            </state>
+			
+			<state id="bin08" title="$l10n_scTitle_storageBin08" storageIds="bin08">
+                <objectChanges>
+                </objectChanges>
+            </state>
+        </outputStates>
+
+        <!--
+            Controlled Storages:
+            - All vanilla storage keys can be used here
+                + Exception: supportsMultipleFillTypes is always false (one storage one fillType at a time)
+            - This allows multiple storages to be configured and used with input/output control states
+            - Can also be used with extended stations to create multiple storage/fillType specific load/unload points within the placeable
+            - Storages with "isExtension" set to true can be used with other placeables
+                + If controllers are set to allow extensions, these storages will be added to their pool if selected
+        -->
+        <storages>
+            <storage node="storage" fillTypeCategories="farmSilo" capacity="75000" isExtension="false">
+                <!--
+                    The <thStateController> section is used to prevent new keys from potentially conflicting with existing ones
+                    - id: Storage id for use with state controller station and state set up
+                    - title: Storage in game title for use with state controller
+                -->
+                <thStateController id="bin01" title="$l10n_scTitle_storageBin01"/>
+            </storage>
+			
+			<storage node="storage" fillTypeCategories="farmSilo" capacity="50000" isExtension="false">
+                <thStateController id="bin02" title="$l10n_scTitle_storageBin02"/>
+            </storage>
+
+            <storage node="storage" fillTypeCategories="farmSilo" capacity="50000" isExtension="false">
+                <thStateController id="bin03" title="$l10n_scTitle_storageBin03"/>
+            </storage>
+
+            <storage node="storage" fillTypeCategories="farmSilo" capacity="1754765" isExtension="false">
+                <thStateController id="bin04" title="$l10n_scTitle_storageBin04"/>
+            </storage>
+
+            <storage node="storage" fillTypeCategories="farmSilo" capacity="1754765" isExtension="false">
+                <thStateController id="bin05" title="$l10n_scTitle_storageBin05"/>
+            </storage>
+			
+			<storage node="storage" fillTypeCategories="farmSilo" capacity="2238632" isExtension="false">
+                <thStateController id="bin06" title="$l10n_scTitle_storageBin06"/>
+            </storage>
+			
+			<storage node="storage" fillTypeCategories="farmSilo" capacity="1754765" isExtension="false">
+                <thStateController id="bin07" title="$l10n_scTitle_storageBin07"/>
+            </storage>
+			
+			<storage node="storage" fillTypeCategories="farmSilo" capacity="1754765" isExtension="false">
+                <thStateController id="bin08" title="$l10n_scTitle_storageBin08"/>
+            </storage>
+
+            <!--
+                This is a "plug-in" storage with a capacity of 0
+                - If extensions are allowed above, their capacities will be added to this
+                - Used to allow specfic fillTypes with specific input/output states (see above)
+                    + Example: the "tank01" storage is only allowed with input state 1 (wet bin)
+            -->
+            <storage node="storage" fillTypes="PROPANE" capacity="80000" isExtension="false">
+                <thStateController id="tank01" title="$l10n_scTitle_propaneTank01"/>
+            </storage>
+
+            <storage node="storage" fillTypes="MAIZE" capacity="1000" isExtension="false">
+                <thStateController id="DRYER" title="Dryer chamber"/>
+            </storage>
+            <storage node="storage" fillTypes="MAIZE CORN_DRY" capacity="1000" isExtension="false">
+                <thStateController id="DRYER_OUT" title="Dryer discharge hopper"/>
+            </storage>
+        </storages>
+
+        <!--
+            Extended Selling Stations:
+            - Selling stations are just extended unloading stations with optional sell capabilities
+            - All vanilla unloading and selling station keys can be used here
+            - Allows multiple full featured unload stations with associated triggers in a single placeable
+        -->
+        <sellingStations>
+            <sellingStation node="sellingStation" supportsExtension="true">
+                <unloadTrigger exactFillRootNode="exactFillRootNode" fillTypeCategories="farmSilo" aiNode="aiUnloadingNode"/>
+                <!--
+                    The <thStateController> section is used to prevent new keys from potentially conflicting with existing ones
+                    - linkedStorageIds: Storage tables associated with this station
+                    - syncStorage: If true, linked storage must also be a currently selected input storage to be used by this station
+                -->
+                <thStateController linkedStorageIds="bin03" syncStorage="false"/>
+            </sellingStation>
+        </sellingStations>
+
+        <!--
+            Extended Loading Stations:
+            - Loading stations are optional to a production, you do not need this section
+            - All vanilla loading station keys can be used here
+            - Allows multiple full featured loading stations with associated triggers in a single placeable
+        -->
+        <loadingStations>
+            <loadingStation node="loadingTrigger" supportsExtension="true">
+                <loadTrigger triggerNode="loadingTrigger" fillLitersPerSecond="2000" dischargeNode="dischargeNode" fillTypeCategories="farmSilo" aiNode="aiLoadingNode">
+                    <effectNode effectClass="PipeEffect" effectNode="pipeEffect"      materialType="pipe"           fadeTime="0.5" maxBending="0" controlPoint="4.8 0 0 0"/>
+                    <effectNode                          effectNode="pipeEffectSmoke" materialType="unloadingSmoke" fadeTime="0.5"/>
+                </loadTrigger>
+                <!--
+                    The <thStateController> section is used to prevent new keys from potentially conflicting with existing ones
+                    - linkedStorageIds: Storage tables associated with this station
+                    - syncStorage: If true, linked storage must also be a currently selected output storage to be used by this station
+                -->
+                <thStateController linkedStorageIds="bin01 bin02 bin03 bin04 bin05 bin06 bin07 bin08" syncStorage="true"/>
+            </loadingStation>
+        </loadingStations>
+
+        <!--
+            Custom Production Point (Optional):
+            - Whatever sections are set here will override the same name vanilla section
+                + Example: If <productions> are defined here, the vanilla <productions> will not be used
+                + Example: If the entire <productions> section is omitted here, the vanilla <productions> will be used
+        -->
+        <productionPoint>
+            <!--
+                Productions Section:
+                - This section is for defining state controller specific recipes/productions
+                - Default productions are ignored if this section is defined here
+                - Done this way to allow ONLY state controller recipes when state controller is installed
+                - All vanilla production keys and recipe setups are valid here
+                    + You do NOT have to make dynamic or special recipes, regular recipes work here too
+                - Below are examples of the new dynamic and special recipes
+            -->
+            <productions>
+                <!--
+                    Dynamic Recipes: (Optional)
+                    - Creates an on-the-fly recipe based on what is currently valid in input/output storage
+                    - You can have as many dynamic recipes as you want, does NOT have to be a grain dryer
+                    - Dynamic Configuration Sections:
+                        + The <inputs> section becomes all of the individual "main" input fillTypes
+                        + The <outputs> section becomes all of the individual "main" output fillTypes
+                        + The <additives> section adds the specified fillTypes to the specified main input fillType recipes
+                        + The <byproducts> section adds the specified fillTypes to the specified main output fillType recipes
+                        + This will create a single recipe based on what is currently in input and output storage
+                    - Below configuration explained:
+                        + This will convert wheat, barley, oats, and/or corn depending on what is currently in input storage
+
+                        + Example 1: Wheat and corn both in input storage, output storage is empty
+                            - Would convert 100 WHEAT + 100 MAIZE
+                                + recipe factor is 0.5 (1 divied by 2 valid entries, WHEAT and MAIZE)
+                                + 100 WHEAT because 200 * 0.5 (recipe factor) = 100
+                                + 100 MAIZE because 200 * 0.5 (recipe factor) = 100
+                            - Would require 5 PROPANE
+                                + WHEAT requires 4 PROPANE, multiplied by recipe factor (0.5) = 2
+                                + MAIZE requires 6 PROPANE, multiplied by recipe factor (0.5) = 3
+                                + 2 PROPANE + 3 PROPANE = 5
+                            -  Would output 100 WHEAT_DRY + 100 CORN_DRY
+                                + 100 WHEAT_DRY because 200 WHEAT_DRY * 0.5 (recipe factor) = 100
+                                + 100 CORN_DRY because 200 CORN_DRY * 0.5 (recipe factor) = 100
+                            - Would output 5 STONE (commented out below)
+                                + STONE is a byproduct of WHEAT_DRY (5) * 0.5 (recipe factor) = 2.5
+                                + STONE is a byproduct of CORN_DRY (5) * 0.5 (recipe factor) = 2.5
+                                + 2.5 STONE + 2.5 STONE = 5
+                            - All recipe values are rounded to the nearest tenth
+                                + Example: If a recipe required 2.56 PROPANE, the actual requirement would be 2.6
+                    - Again, this recipe changes in game depending on what is currently in input/output storage
+                    - The <inputs> and <outputs> are all things that CAN be converted (depending on storage selection)
+                    - The <additives> and <byproducts> are things added to the <inputs> and <outputs> to create the final recipe
+                -->
+                <production id="GRAIN_DRYER" name="$l10n_scProduction_grainDryer" cyclesPerHour="10" costsPerActiveHour="20">
+                    <inputs>
+                        <input fillType="MAIZE"   amount="200"/>
+                    </inputs>
+                    <outputs>
+                        <output fillType="CORN_DRY"      amount="200"/>
+                    </outputs>
+                    <!--
+                        The <thStateController> section is used to prevent interference with other mod/game keys
+                        - isDynamic: This key triggers the new dynamic configuration (sets up as a vanilla recipe otherwise)
+                        - iconFilename: Special icon for this production (rather than using a fillType icon)
+                    -->
+                    <thStateController isDynamic="true" iconFilename="gui/dryerIcon.png">
+                        <grainFlow role="dryer" litersPerHour="2000"/>
+                        <!--
+                            Additive fillTypes can be added more than one at different amounts to different fillTypes
+                            - Adding more PROPANE lines allows adding a different amount for different input fillTypes
+                            - Adding more PROPANE lines to fillTypes that have already been added will overwrite the previous entry
+                                + Adding a second PROPANE line for barley would overwrite the PROPANE entries for barley above it
+                            - This addives section translates to:
+                                + Require 4 PROPANE for BARLEY, MAIZE, OAT, SOYBEAN, and WHEAT
+                            -->
+                        <additives>
+                            <additive fillType="PROPANE" amount="4" addTo="MAIZE"/>
+                            <!--
+                                Additional additive lines with the same fillType are used to set different amounts
+                                - This line would override the PROPANE amount for MAIZE, setting it to 6 instead of 4
+                            -->
+                            <!-- <additive fillType="PROPANE" amount="6" addTo="MAIZE"/> -->
+                        </additives>
+                        <byproducts>
+                            <!--
+                                Follows the exact same rules as additives (above)
+                                - The below section would add 5 stone to WHEAT_DRY, BARLEY_DRY, BARLEY_DRY, and CORN_DRY (when produced)
+                            -->
+                            <!--<byproduct fillType="STONE" amount="5" addTo="BARLEY_DRY CORN_DRY OAT_DRY SOYBEAN_DRY WHEAT_DRY/> -->
+                        </byproducts>
+                    </thStateController>
+					
+					<operatingObjectChanges>
+						<objectChange node="0>8|15"    visibilityActive="true" visibilityInactive="false"/>
+					</operatingObjectChanges>
+                </production>
+
+                <!--
+                    Vanilla recipes work here too
+                    - Custom icons can be used the same as dynamic or special recipes
+                -->
+                
+
+                <!--
+                    Special Recipe: SC_FILLTYPE_MOVER (case sensitive - activated by id)
+                    - Optional recipe, you do NOT have to add this
+                    - Creates a dynamic recipe that allows you to quickly move material from input to output storage
+                    - No need to create a move "X" recipe for every "movable" fillType now that storages are selectable
+                    - This will create a recipe on the fly, moving whatever is in input storage to currently selected output storage
+                    - Output storage must have enough space to fit ALL current input fillTypes, just like any other recipe
+                    - The <inputs> and <outputs> sections are just placeholders to satisfy the vanilla system
+                    - Can have only ONE of each special recipe. More may be added later
+                -->
+                <production id="SC_FILLTYPE_MOVER" name="$l10n_scProduction_moveFillType" cyclesPerHour="50" costsPerActiveHour="5">
+                    <inputs>
+                        <input fillType="MAIZE" amount="200"/>
+                    </inputs>
+                    <outputs>
+                        <output fillType="MAIZE" amount="200"/>
+                    </outputs>
+                    <!--
+                        - The "isDynamic" key would be ignored here if specified (id is a special recipe name)
+                        - The "iconFilename" key is valid, however, allowing you to use whatever icon you like
+                    -->
+                    <thStateController iconFilename="gui/moveIcon.png">
+                        <!--
+                            Additives for this recipe work a little differently
+                            - The "addTo" key is not used here
+                            - These additives are required for the mover recipe to run period
+                        -->
+                        <additives>
+                            <!--
+                                This would require 2 propane regardless of what is being moved
+                            -->
+                            <!--<additive fillType="PROPANE" amount="2"/>-->
+                        </additives>
+                    </thStateController>
+                </production>
+
+                <production id="SC_RECEIVING_LEG" name="Receiving leg: Pit to Input State" cyclesPerHour="50" costsPerActiveHour="5">
+                    <inputs><input fillType="MAIZE" amount="200"/></inputs>
+                    <outputs><output fillType="MAIZE" amount="200"/></outputs>
+                    <thStateController><grainFlow role="receive" litersPerHour="10000"/></thStateController>
+                </production>
+                <production id="SC_DRY_LEG" name="Dry-grain leg: Dryer to Output State" cyclesPerHour="50" costsPerActiveHour="5">
+                    <inputs><input fillType="MAIZE" amount="200"/></inputs>
+                    <outputs><output fillType="MAIZE" amount="200"/></outputs>
+                    <thStateController><grainFlow role="discharge" litersPerHour="10000"/></thStateController>
+                </production>
+            </productions>
+        </productionPoint>
+    </thStateController>
+
+    <!--
+        Vanilla Production Point Entries
+        - These entries are only loaded if the corresponding state controller sections are not defined
+    -->
+    <productionPoint>
+        <productions>
+            <production id="CORN_DRYER" name="$l10n_fillType_maize_dry" cyclesPerHour="20" costsPerActiveHour="20">
+                <inputs>
+                    <input fillType="MAIZE" amount="1000"/>
+                </inputs>
+                <outputs>
+                    <output fillType="CORN_DRY" amount="1000"/>
+                </outputs>
+            </production>
+        </productions>
+
+        <sellingStation node="sellingStation" supportsExtension="false">
+            <unloadTrigger exactFillRootNode="exactFillRootNode" fillTypes="MAIZE CORN_DRY" aiNode="aiUnloadingNode"/>
+        </sellingStation>
+
+        <loadingStation node="loadingTrigger" supportsExtension="false">
+            <loadTrigger triggerNode="loadingTrigger" fillLitersPerSecond="2000" dischargeNode="dischargeNode" fillTypes="MAIZE CORN_DRY" aiNode="aiLoadingNode">
+                <effectNode effectClass="PipeEffect" effectNode="pipeEffect"      materialType="pipe"           fadeTime="0.5" maxBending="0" controlPoint="4.8 0 0 0"/>
+                <effectNode                          effectNode="pipeEffectSmoke" materialType="unloadingSmoke" fadeTime="0.5"/>
+            </loadTrigger>
+        </loadingStation>
+
+        <storage node="storage" fillTypes="MAIZE CORN_DRY" capacity="1000000" fillLevelSyncThreshold="50" isExtension="false"/>
+
+        <playerTrigger node="playerTrigger"/>
+
+        <sounds>
+            <idle template="grainMillIdle" linkNode="0>"/>
+            <active template="grainMillWork" linkNode="0>"/>
+        </sounds>
+    </productionPoint>
+	
+	
+
+    <i3dMappings>
+        <i3dMapping id="mapPosition" node="0>0|0|0"/>
+        <i3dMapping id="storage" node="0>0|0|1"/>
+        <i3dMapping id="loadingTrigger" node="0>0|0|2|0|0"/>
+        <i3dMapping id="dischargeNode" node="0>0|0|2|0|1"/>
+        <i3dMapping id="dischargeEffect" node="0>0|0|2|0|2"/>
+        <i3dMapping id="pipeEffect" node="0>0|0|2|0|2|0"/>
+        <i3dMapping id="pipeEffectSmoke" node="0>0|0|2|0|2|1"/>
+        <i3dMapping id="aiLoadingNode" node="0>0|0|2|0|3"/>
+        <i3dMapping id="sellingStation" node="0>3"/>
+        <i3dMapping id="exactFillRootNode" node="0>0|0|3|0"/>
+        <i3dMapping id="grainGutterLinkNode" node="0>0|0|3|1"/>
+        <i3dMapping id="aiUnloadingNode" node="0>0|0|3|2"/>
+        <i3dMapping id="infoTrigger" node="0>0|0|4"/>
+        <i3dMapping id="aiSpline" node="0>0|0|3|3"/>
+        <i3dMapping id="clearArea1Start" node="0>31|0"/>
+        <i3dMapping id="clearArea1Width" node="0>31|0|0"/>
+        <i3dMapping id="clearArea1Height" node="0>31|0|1"/>
+        <i3dMapping id="levelArea1Start" node="0>32|0"/>
+        <i3dMapping id="levelArea1Width" node="0>32|0|0"/>
+        <i3dMapping id="levelArea1Height" node="0>32|0|1"/>
+        <i3dMapping id="indoorArea1Start" node="0>3|0"/>
+        <i3dMapping id="indoorArea1Width" node="0>3|0|0"/>
+        <i3dMapping id="indoorArea1Height" node="0>3|0|1"/>
+        <i3dMapping id="indoorArea2Start" node="0>3|1"/>
+        <i3dMapping id="indoorArea2Width" node="0>3|1|0"/>
+        <i3dMapping id="indoorArea2Height" node="0>3|1|1"/>
+        <i3dMapping id="testArea1Start" node="0>33|0"/>
+        <i3dMapping id="testArea1End" node="0>33|0|0"/>
+        <i3dMapping id="markerLoading" node="0>30|0"/>
+        <i3dMapping id="markerUnloading" node="0>30|1"/>
+        <i3dMapping id="tipOcclusionUpdateArea1Start" node="0>35|0"/>
+        <i3dMapping id="tipOcclusionUpdateArea1End" node="0>35|0|0"/>
+        <i3dMapping id="teleportNode" node="0>40"/>
+        <i3dMapping id="playerTrigger" node="0>41|0"/>
+        <i3dMapping id="markerPlayerTrigger" node="0>41|0|0"/>
+        <i3dMapping id="controlTrigger" node="0>41|1"/>
+        <i3dMapping id="markerControlTrigger" node="0>41|1|0"/>
+    </i3dMappings>
+</placeable>
