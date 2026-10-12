@@ -1,4 +1,4 @@
-# Two-leg GSI test: State Controller 1.0.2.0 + GSI 0.0.2.0
+# Two-leg GSI test: State Controller 1.0.2.1 + GSI 0.0.2.1
 
 Install BOTH updated ZIPs, named FS25_TH_StateController.zip and
 FS25_GSI_SILOS.zip. Replace prior copies, including any extracted mod folders.
@@ -9,7 +9,7 @@ are unchanged. No extra leg animation or sound has been added in this build.
 ## Controls and route
 
 The existing Input State selector now chooses the receiving leg destination.
-Output State chooses the dry-grain leg destination (and trailer loading bin).
+Output State chooses the trailer loading bin; it does not redirect dryer discharge.
 Use the production menu to independently activate these three processes:
 
 1. Receiving leg: Pit to Input State. All new grain unloading goes into Pit
@@ -18,8 +18,10 @@ Use the production menu to independently activate these three processes:
 2. Moisture drying (20%) / Grain Dryer. Only Wet Bin supplies the 1,000 L
    dryer chamber. A running batch is never topped up with fresh wet corn.
    Finished grain goes into the separate 1,000 L discharge hopper.
-3. Dry-grain leg: Dryer to Output State. Moves from the discharge hopper to
-   the currently selected output bin. It never draws directly from Wet Bin.
+3. Dryer discharge: Storage Bin #1. Moves from the discharge hopper only to
+   Storage Bin #1 (BIN04), regardless of Input or Output State. It never draws
+   directly from Wet Bin. Full or incompatible Bin #1 pauses discharge; it
+   resumes when that same bin has room.
 
 Both legs can run together. For direct storage/bypass, select a storage bin as
 Input State and run only the receiving leg. The dryer always takes Wet Bin
@@ -52,8 +54,9 @@ mechanisms; there is no grain stored in an unsaved Lua-only queue.
 - Route corn into Wet Bin. Start dryer and dry-grain leg. Check each buffer,
   total liters, propane, and destination moisture. With MS, do not expect the
   first output until the first small batch reaches 20%.
-- Fill an output or select a bin containing another crop. Remaining grain
-  must stay in the hopper/chamber, then resume when another output is chosen.
+- Fill Storage Bin #1 or put another crop in it. Discharge must wait without
+  losing grain. Changing Output State must not divert it. Empty Bin #1 and
+  confirm discharge resumes into Bin #1 only.
 - Stop each production separately; the other leg must remain operable.
 - Save/reload with corn in both dryer buffers. Check liters and moisture.
 - Repeat with MS disabled, checking CORN_DRY output and propane use.

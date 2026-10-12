@@ -471,10 +471,10 @@
                     <outputs><output fillType="MAIZE" amount="200"/></outputs>
                     <thStateController><grainFlow role="receive" litersPerHour="10000"/></thStateController>
                 </production>
-                <production id="SC_DRY_LEG" name="Dry-grain leg: Dryer to Output State" cyclesPerHour="50" costsPerActiveHour="5">
+                <production id="SC_DRY_LEG" name="Dryer discharge: Storage Bin #1" cyclesPerHour="50" costsPerActiveHour="5">
                     <inputs><input fillType="MAIZE" amount="200"/></inputs>
                     <outputs><output fillType="MAIZE" amount="200"/></outputs>
-                    <thStateController><grainFlow role="discharge" litersPerHour="10000"/></thStateController>
+                    <thStateController><grainFlow role="discharge" litersPerHour="10000" destinationStorageId="bin04"/></thStateController>
                 </production>
             </productions>
         </productionPoint>

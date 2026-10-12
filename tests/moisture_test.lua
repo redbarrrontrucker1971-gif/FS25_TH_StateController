@@ -644,4 +644,48 @@ test("grain flow never mutates on a client or unowned production", function()
     SCGrainFlow.update(d, r, rd, 1)
     equal(wet:getFillLevel(1), 1000)
 end)
+test("fixed discharge ignores selectors, blocks and resumes only into Bin 1", function()
+    local d, r, _, wet, other, _, _, _, ready, selected = flowSetup()
+    local fixed = other
+    d.stateController.ids.BIN04 = fixed
+    fixed.capacity = 100
+    ready:setFillLevel(1000, 1)
+    SCMoisture.set(ready, 1, {moisture = 0.20, quality = 80})
+    local x = xml()
+    x:setValue("recipe.grainFlow#role", "discharge")
+    x:setValue("recipe.grainFlow#destinationStorageId", "bin04")
+    local rd = {}
+    assert(SCGrainFlow.configure(d, r, rd, x, "recipe", "FS25_GSI_SILOS"))
+    equal(rd.grainFlow.destinationId, "BIN04")
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(fixed:getFillLevel(1), 100); equal(ready:getFillLevel(1), 900)
+    equal(selected:getFillLevel(1), 0)
+    near(SCMoisture.info(fixed, 1).moisture, 0.20)
+    near(SCMoisture.info(fixed, 1).quality, 80)
+    d.stateController.outputs = {wet}
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(ready:getFillLevel(1), 900)
+    equal(r.status, ProductionPoint.PROD_STATUS.NO_OUTPUT_SPACE)
+    fixed:setFillLevel(0, 1); fixed:setFillLevel(50, 2)
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(ready:getFillLevel(1), 900)
+    fixed:setFillLevel(0, 2)
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(fixed:getFillLevel(1), 100); equal(ready:getFillLevel(1), 800)
+    equal(wet:getFillLevel(1), 1000)
+    d.stateController.ids.BIN04 = nil
+    SCGrainFlow.update(d, r, rd, 1)
+    equal(ready:getFillLevel(1), 800); equal(selected:getFillLevel(1), 0)
+end)
+test("fixed discharge also handles dry corn without Moisture System", function()
+    local d, r, _, _, fixed, _, _, _, ready, selected = flowSetup()
+    g_currentMission.MoistureSystem = nil
+    d.stateController.ids.BIN04 = fixed
+    ready:setFillLevel(200, 4)
+    SCGrainFlow.update(d, r, {grainFlow = {
+        role = "discharge", rate = 10000, destinationId = "BIN04"}}, 0.01)
+    equal(fixed:getFillLevel(4), 100); equal(ready:getFillLevel(4), 100)
+    equal(selected:getFillLevel(4), 0)
+    g_currentMission.MoistureSystem = ms
+end)
 print(string.format("%d tests passed", checks))

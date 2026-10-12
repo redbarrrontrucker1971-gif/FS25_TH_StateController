@@ -5,6 +5,7 @@ SCGrainFlow = {}
 function SCGrainFlow.registerXMLPaths(schema, path)
     path = path .. ".grainFlow"
     schema:register(XMLValueType.STRING, path .. "#role", "receive, dryer, or discharge")
+    schema:register(XMLValueType.STRING, path .. "#destinationStorageId", "Fixed internal discharge storage; ignores Output State")
     schema:register(XMLValueType.FLOAT, path .. "#litersPerHour", "Maximum liters per game hour", 10000)
 end
 
@@ -12,7 +13,9 @@ function SCGrainFlow.configure(data, recipe, rd, xml, key, customEnv)
     local role = xml:getValue(key .. ".grainFlow#role")
     if role == nil or customEnv ~= "FS25_GSI_SILOS" then return false end
     local rate = xml:getValue(key .. ".grainFlow#litersPerHour", 10000)
-    rd.grainFlow = {role = role, rate = rate,
+    local destinationId = xml:getValue(key .. ".grainFlow#destinationStorageId")
+    if destinationId ~= nil then destinationId = string.upper(destinationId) end
+    rd.grainFlow = {role = role, rate = rate, destinationId = destinationId,
         invalid = (role ~= "receive" and role ~= "dryer" and role ~= "discharge")
             or type(rate) ~= "number" or rate <= 0 or rate >= math.huge}
     rd.type = SCProductionPoint.RECIPE_TYPE.NORMAL
@@ -72,9 +75,12 @@ function SCGrainFlow.move(controller, source, destination, ft, limit)
     return accepted
 end
 
-function SCGrainFlow.leg(data, recipe, sourceId, stateType, limit, hours)
+function SCGrainFlow.leg(data, recipe, sourceId, stateType, limit, hours, destinationId)
     local c = data.stateController
     local source = c:getStorage(sourceId)
+    -- A configured physical pipe never falls back to the selected output.
+    local destinations = destinationId ~= nil and {c:getStorage(destinationId)}
+        or c:getActiveStorageList(stateType)
     local moved, hasGrain = 0, false
     if source then
         -- Sort for predictable handling of any legacy multi-crop storage.
@@ -84,9 +90,11 @@ function SCGrainFlow.leg(data, recipe, sourceId, stateType, limit, hours)
         end
         table.sort(crops)
         for _, ft in ipairs(crops) do
-            for _, destination in ipairs(c:getActiveStorageList(stateType)) do
-                -- Only selected, owned internal grain bins. Never pump into fuel.
-                if destination ~= source and c:getCanAccessStorage(destination, nil, ft, stateType) then
+            for _, destination in ipairs(destinations) do
+                -- Fixed pipes use internal storage on this owned production, like the dryer.
+                -- Selector-driven routes retain the normal state access checks.
+                if destination ~= source and (destinationId ~= nil
+                    or c:getCanAccessStorage(destination, nil, ft, stateType)) then
                     moved = moved + SCGrainFlow.move(c, source, destination, ft, math.max(0, limit - moved))
                 end
             end
@@ -161,7 +169,7 @@ function SCGrainFlow.update(data, recipe, rd, hours)
     elseif cfg.role == "receive" then
         SCGrainFlow.leg(data, recipe, "BIN03", SCStateController.STATE_TYPE.INPUT, cfg.rate * hours, hours)
     elseif cfg.role == "discharge" then
-        SCGrainFlow.leg(data, recipe, "DRYER_OUT", SCStateController.STATE_TYPE.OUTPUT, cfg.rate * hours, hours)
+        SCGrainFlow.leg(data, recipe, "DRYER_OUT", SCStateController.STATE_TYPE.OUTPUT, cfg.rate * hours, hours, cfg.destinationId)
     else
         SCGrainFlow.dry(data, recipe, rd, hours)
     end
