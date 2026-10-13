@@ -1,4 +1,4 @@
--- Copyright ©2023 by Todd Hundersmarck (ThundR)
+-- Copyright Â©2023 by Todd Hundersmarck (ThundR)
 -- All Rights Reserved
 
 THUtils = {
@@ -718,23 +718,36 @@ end
 return categoryList, numCategories
 end
 function THUtils.getFillTypeNamesByCategories(categoryNames, fillTypeNames)
+-- FS25 STRINGS XML values are arrays; legacy STRING paths return text.
+-- Preserve the caller's representation without mutating the XML's arrays.
+local returnList = type(fillTypeNames) == "table"
+local names, seen = {}, {}
+local function add(name)
+local key = string.upper(name)
+if not seen[key] then
+seen[key] = true
+table.insert(names, name)
+end
+end
+if returnList then
+for _, name in ipairs(fillTypeNames) do add(name) end
+elseif type(fillTypeNames) == "string" then
+for name in string.gmatch(fillTypeNames, "%S+") do add(name) end
+end
+if type(categoryNames) == "table" then
+categoryNames = table.concat(categoryNames, " ")
+end
 local manager = g_fillTypeManager
 if manager ~= nil then
 local fillTypeList = manager:getFillTypesByCategoryNames(categoryNames)
-if fillTypeList ~= nil then
-for _, fillType in pairs(fillTypeList) do
+for _, fillType in ipairs(fillTypeList or {}) do
 local fillTypeInfo = THUtils.getFillType(fillType)
-if fillTypeInfo ~= nil then
-if fillTypeNames == nil then
-fillTypeNames = fillTypeInfo.name
-else
-fillTypeNames = fillTypeNames.." "..fillTypeInfo.name
+if fillTypeInfo ~= nil then add(fillTypeInfo.name) end
 end
 end
-end
-end
-end
-return fillTypeNames
+if returnList then return names end
+if #names == 0 then return fillTypeNames end
+return table.concat(names, " ")
 end
 function THUtils.getFruitType(fruitType, verbose, raise)
 local manager = g_fruitTypeManager
