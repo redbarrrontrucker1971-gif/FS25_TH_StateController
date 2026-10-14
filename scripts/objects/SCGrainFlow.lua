@@ -1,4 +1,4 @@
--- Explicit GSI grain-flow opt-in. Real SC storages own every liter, including
+-- Explicit GSI grain-flow and AGI receiving-leg opt-in. Real SC storages own every liter, including
 -- dryer batches, so existing storage savegame/network code persists the flow.
 SCGrainFlow = {}
 
@@ -10,9 +10,11 @@ end
 
 function SCGrainFlow.configure(data, recipe, rd, xml, key, customEnv)
     local role = xml:getValue(key .. ".grainFlow#role")
-    if role == nil or customEnv ~= "FS25_GSI_SILOS" then return false end
+    local isAGIReceiver = customEnv == "FS25_AGI_TripleBins_Dryer" and role == "receive"
+    if role == nil or (customEnv ~= "FS25_GSI_SILOS" and not isAGIReceiver) then return false end
     local rate = xml:getValue(key .. ".grainFlow#litersPerHour", 10000)
     rd.grainFlow = {role = role, rate = rate,
+        receivingStorageId = isAGIReceiver and "BIN01" or "BIN03",
         invalid = (role ~= "receive" and role ~= "dryer" and role ~= "discharge")
             or type(rate) ~= "number" or rate <= 0 or rate >= math.huge}
     rd.type = SCProductionPoint.RECIPE_TYPE.NORMAL
@@ -159,7 +161,7 @@ function SCGrainFlow.update(data, recipe, rd, hours)
     if cfg.invalid then
         SCMoistureDryer.setStatus(data, recipe, ProductionPoint.PROD_STATUS.MISSING_INPUTS)
     elseif cfg.role == "receive" then
-        SCGrainFlow.leg(data, recipe, "BIN03", SCStateController.STATE_TYPE.INPUT, cfg.rate * hours, hours)
+        SCGrainFlow.leg(data, recipe, cfg.receivingStorageId or "BIN03", SCStateController.STATE_TYPE.INPUT, cfg.rate * hours, hours)
     elseif cfg.role == "discharge" then
         SCGrainFlow.leg(data, recipe, "DRYER_OUT", SCStateController.STATE_TYPE.OUTPUT, cfg.rate * hours, hours)
     else

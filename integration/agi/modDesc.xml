@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="104">
+    <author>River Bottom Custom Farming, Redbarron</author>
+    <version>1.0.0.7</version>
+    <iconFilename>icon_AGI_TripleBins_Dryer.dds</iconFilename>
+    <title>
+        <en>AGI/MFS Triple Silo Corn Dryer _Redsmod</en>
+        <de>AGI/MFS Maistrockner Mit Dreifachsilo</de>
+    </title>
+	
+	
+    <description>
+        <en><![CDATA[AGI/MFS Triple Silo that dry corn they hold up to 8,500,000, will need propane for it to work
+		Changelog 1.0.0.1
+		Changed it to work with State Controller by ThundR's Simulator Mods
+		Changelog 1.0.0.2 
+		Made each silo to true capacity
+		Changelog 1.0.0.3
+		Added animation and sound to blowers as well as switch boxes
+		Changelog 1.0.0.4
+		Added unload pit and set controles up just like IRL
+		]]></en>
+        <de><![CDATA[AGI/MFS Triple Silo, das bis zu 8.500.000 Trockenmais fasst, benötigt Propan, damit es funktioniert]]></de>
+    </description>
+	<multiplayer supported="true"/>
+	<l10n filenamePrefix="lang/lang"/>
+
+	<fillTypes filename="map/fillTypes/fillTypes.xml" />
+	
+	<extraSourceFiles>
+		<sourceFile filename="scripts/AGIRotatorFix.lua"/>
+	</extraSourceFiles>
+
+
+
+    <storeItems>
+        <storeItem xmlFilename="AGI_TripleBins_Dryer.xml"/>
+		<storeItem xmlFilename="propaneTank.xml"/>
+    </storeItems>
+	
+	<placeableTypes>
+		<type name="agiDryer" parent="productionPoint" className="Placeable" filename="$dataS/scripts/placeables/Placeable.lua">
+			<specialization name="weighingStation" />
+			
+		</type>
+	</placeableTypes>
+    
+	
+</modDesc>

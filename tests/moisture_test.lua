@@ -644,4 +644,31 @@ test("grain flow never mutates on a client or unowned production", function()
     SCGrainFlow.update(d, r, rd, 1)
     equal(wet:getFillLevel(1), 1000)
 end)
+test("AGI receiving leg uses Pit BIN01 independently of output, never Loadout BIN03", function()
+    local d,r,_,wet,other,fuel,pit,_,_,out=flowSetup()
+    local c=d.stateController
+    c.ids.BIN01=pit; c.ids.BIN02=wet; c.ids.BIN03=out
+    pit:setFillLevel(1000,1); out:setFillLevel(500,1)
+    SCMoisture.set(pit,1,{moisture=0.24,quality=80})
+    local x=xml();x:setValue("recipe.grainFlow#role","receive")
+    local rd={}
+    assert(SCGrainFlow.configure(d,r,rd,x,"recipe","FS25_AGI_TripleBins_Dryer"))
+    equal(rd.grainFlow.receivingStorageId,"BIN01")
+    SCGrainFlow.update(d,r,rd,0.01)
+    equal(pit:getFillLevel(1),900);equal(other:getFillLevel(1),100)
+    equal(out:getFillLevel(1),500);equal(fuel:getFillLevel(3),100)
+    near(SCMoisture.info(other,1).moisture,0.24)
+    other.capacity=100
+    SCGrainFlow.update(d,r,rd,1)
+    equal(pit:getFillLevel(1),900)
+    c.selected=wet
+    SCGrainFlow.update(d,r,rd,0.01)
+    equal(wet:getFillLevel(1),1100);equal(pit:getFillLevel(1),800)
+    g_currentMission.MoistureSystem=nil
+    SCGrainFlow.update(d,r,rd,0.01)
+    equal(wet:getFillLevel(1),1200);equal(pit:getFillLevel(1),700)
+    g_currentMission.MoistureSystem=ms
+    x:setValue("recipe.grainFlow#role","dryer")
+    assert(not SCGrainFlow.configure(d,r,{},x,"recipe","FS25_AGI_TripleBins_Dryer"))
+end)
 print(string.format("%d tests passed", checks))
